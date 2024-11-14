@@ -22,7 +22,7 @@ export default class GameRoom {
 
     private createHostUser(hostUserData: any = {}) {
         const host = this.registerNewUser({
-            name: 'Host',
+            nickname: 'Host',
             isHost: true,
             isPlayer: true,
             ...hostUserData
@@ -106,10 +106,6 @@ export default class GameRoom {
                     throw new Error('User not found in room!');
                 };
                 user.connection.lastPing = Date.now();
-                return {
-                    room: room.getRoomSummary(),
-                    game: room.game,
-                }
             },
 
             async updateUserData(userId: string, newUserData: any) {
@@ -119,7 +115,6 @@ export default class GameRoom {
     }
 
     async doRoomAction(userId: string, action: keyof typeof this.actions, data) {
-        console.log(action)
         return await this.actions[action](userId, data);
     }
 
@@ -132,6 +127,7 @@ export default class GameRoom {
         return {
             id: this.id,
             players: this.getPlayers(),
+            users: Array.from(this.users.values()),
         };
     }
 

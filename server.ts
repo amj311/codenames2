@@ -13,7 +13,7 @@ const app = express() as any;
 import cors from 'cors';
 // require("dotenv").config();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3300;
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
@@ -44,18 +44,6 @@ app.use(json());
 app.use(urlencoded({ extended: false }));
 // app.use(cookieParser())
 // app.use(express.static(join(__dirname, 'dist')))
-
-function randomString(length) {
-  let string = '';
-  while (string.length < length) {
-    let char;
-    do {
-      char = String.fromCharCode(97 + Math.floor(Math.random() * 26));
-    } while ('aeiou'.lastIndexOf(char) >= 0);
-    string += char;
-  }
-  return string;
-}
 
 // ROOMS
 import GameRoom from './lib/server/GameRoom';
@@ -122,29 +110,33 @@ app.post('/api/room/new', (req, res) => {
   res.json({ ok: true, rid: newRoom.id, hostUser: newRoom.hostUser });
 });
 
-app.post('/api/room/:id/room-action', async (req, res) => {
-  const { id } = req.params;
-  const { userId, action, data } = req.body;
+app.post('/api/room/:id/room-action/:action', async (req, res) => {
+  const { id, action } = req.params;
+  const { userId, data } = req.body;
   const roomMatch = rooms.get(id);
   if (roomMatch) {
     const actionRes = await roomMatch.doRoomAction(userId, action, data);
     return res.json({
       success: true,
-      data: actionRes || null,
+      actionRes,
+      room: roomMatch.getRoomSummary(),
+      game: roomMatch.game,
     });
   }
   return res.status(404).json({ success: false });
 });
 
-app.post('/api/room/:id/game-action', async (req, res) => {
-  const { id } = req.params;
-  const { userId, action, data } = req.body;
+app.post('/api/room/:id/game-action/:action', async (req, res) => {
+  const { id, action } = req.params;
+  const { userId, data } = req.body;
   const roomMatch = rooms.get(id);
   if (roomMatch) {
     const actionRes = await roomMatch.doGameAction(userId, action, data);
     return res.json({
       success: true,
-      data: actionRes,
+      actionRes,
+      room: roomMatch.getRoomSummary(),
+      game: roomMatch.game,
     });
   }
   return res.status(404).json({ success: false });

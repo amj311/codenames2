@@ -18,6 +18,12 @@ export const useGameStore = defineStore('game', {
       this.gameRoomId = id;
       this.initPings();
     },
+    setGameState(state) {
+      this.gameState = state;
+    },
+    setRoomState(state) {
+      this.roomState = state;
+    },
     setUser(user) {
       this.user = user
     },
@@ -29,12 +35,11 @@ export const useGameStore = defineStore('game', {
     },
     async doPing() {
       try {
-        const { data } = await api.post('/room/' + this.gameRoomId + '/room-action', {
+        const { data } = await api.post('/room/' + this.gameRoomId + '/room-action/pingUser', {
           userId: this.user.id,
-          action: 'pingUser',
         });
-        this.gameState = data.data.game;
-        this.roomState = data.data.room;
+        this.gameState = data.game;
+        this.roomState = data.room;
         this.schedulePing();
       }
       catch (err) {
@@ -46,6 +51,10 @@ export const useGameStore = defineStore('game', {
       this.pingTimeout = setTimeout(this.doPing, PING_INTERVAL);
     },
     handlePingError() {
+    },
+
+    getUserById(userId) {
+      return this.roomState.users.find((user) => user.id === userId);
     }
   },
   getters: {

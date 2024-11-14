@@ -35,7 +35,7 @@
           :key="teamCode"
         >
           <div
-            v-if="!state.game.teams[teamCode].captain"
+            v-if="!state.game.teams[teamCode].captainId"
             class="ui-shiny ui-raised team-option"
             :class="{ 'ui-pressable': !state.user.isHost && !userCaptainOfTeam }"
             @click="setUserAsCaptain(teamCode)"
@@ -201,7 +201,7 @@ export default {
     },
 
     needNewCaptains() {
-      return !this.gameState.teams.teamOne.captain || !this.gameState.teams.teamTwo.captain;
+      return !this.gameState.teams.teamOne.captainId || !this.gameState.teams.teamTwo.captainId;
     },
 
     userCaptainOfTeam() {

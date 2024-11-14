@@ -57,6 +57,9 @@ export default class Game {
             configure(userId, config) {
                 game.configure(config);
             },
+            makeUserCaptain(_, { teamCode, userId }) {
+                game.teams[teamCode].captainId = userId;
+            },
         }
     }
 
@@ -127,17 +130,17 @@ export default class Game {
         return new RevealCardResponse(card, cardBelongsToTeamOfTurn, this)
     }
 
-    setTeamCaptain(setAsCaptain, teamCode, user) {
-        if (!setAsCaptain || !teamCode) {
-            if (this.teams.teamOne.captain?.id == user.id) this.teams.teamOne.captain = null
-            if (this.teams.teamTwo.captain?.id == user.id) this.teams.teamTwo.captain = null
-        } else {
-            this.setTeamCaptain(false, null, user)
-            if (this.teams[teamCode]);
-            this.teams[teamCode].captain = user
-        }
-        return this
-    }
+    // setTeamCaptain(setAsCaptain, teamCode, user) {
+    //     if (!setAsCaptain || !teamCode) {
+    //         if (this.teams.teamOne.captainId == user.id) this.teams.teamOne.captain = null
+    //         if (this.teams.teamTwo.captainId == user.id) this.teams.teamTwo.captain = null
+    //     } else {
+    //         this.setTeamCaptain(false, null, user)
+    //         if (this.teams[teamCode]);
+    //         this.teams[teamCode].captain = user
+    //     }
+    //     return this
+    // }
 
     resetGame() {
         for (const team of Object.values(this.teams)) {
