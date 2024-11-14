@@ -2,25 +2,46 @@
   setup
   lang="ts"
 >
+import SwapView from '@/components/SwapView.vue';
 import { useGameStore } from '@/stores/game.store';
+import GameSetupView from './GameSetupView.vue';
+import { computed } from 'vue';
+
+const Views = {
+  Loading: 'loading',
+  Setup: 'setup',
+  Play: 'play',
+};
 
 const gameStore = useGameStore();
+
+const currentView = computed(() => {
+  if (gameStore.gameState) {
+    if (gameStore.gameState.state.isInPlay) {
+      return Views.Play;
+    }
+    return Views.Setup;
+  }
+  return Views.Loading;
+})
 
 </script>
 
 <template>
-  <div class="about">
-    <h1>This is room {{ gameStore.gameRoomId }}</h1>
-    <div>You are user: {{ gameStore.user.name }} ({{ gameStore.user.id }})</div>
+  <div class="game-wrapper">
+    <SwapView
+      :views="Object.values(Views)"
+      :currentView="currentView"
+    >
+      <template v-slot:setup>
+        <GameSetupView />
+      </template>
+
+      <template v-slot:loading>
+        <div>Loading...</div>
+      </template>
+    </SwapView>
   </div>
 </template>
 
-<style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
-}
-</style>
+<style scoped></style>

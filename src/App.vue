@@ -8,15 +8,12 @@ import PlayView from './components/PlayView.vue'
 import StartView from './components/StartView.vue'
 import Modal from './components/Modal.vue'
 import * as wordSet from './assets/words/test_rel.json';
-import { useCounterStore } from './stores/counter'
 import { useGameStore } from './stores/game.store'
 
-const counterStore = useCounterStore();
 const gameStore = useGameStore();
 </script>
 
 <template>
-  <div @click="counterStore.increment">{{ counterStore.count }}</div>
   <RouterView />
 </template>
 

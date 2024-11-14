@@ -37,9 +37,9 @@ export default {
     },
     async startGame() {
       try {
-        const { data } = await api.get(this.apiUrl + '/newroom');
-        this.gameStore.setGameRoomId(data.rid);
+        const { data } = await api.post(this.apiUrl + '/room/new');
         this.gameStore.setUser(data.hostUser);
+        this.gameStore.loadGameRoom(data.rid);
         this.$router.push('/play');
       }
       catch (err) {

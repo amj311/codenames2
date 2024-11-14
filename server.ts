@@ -62,7 +62,7 @@ import GameRoom from './lib/server/GameRoom';
 import UniqueIdManager from './lib/services/UniqueIdManager';
 const roomIds = new UniqueIdManager(5);
 const rooms = new Map<string, GameRoom>(); //Map<roomId,GameRoom>
-const roomDeleteDelay = 1000 * 2;
+const roomDeleteDelay = 1000 * 60 * 5;
 
 function createRoom() {
   const newRoom = new GameRoom(roomIds.getNew());
@@ -76,6 +76,7 @@ function checkRoomStatus(roomId, alreadyInactive = false) {
   const roomMatch = rooms.get(roomId);
   if (roomMatch) {
     console.log('Checking room ' + roomId + ' for inactivity...');
+    console.log('Active users:', roomMatch.activeUsers.length);
     if (roomMatch.activeUsers.length === 0) {
       if (alreadyInactive) {
         console.log('Room is still inactive. Will delete.');
@@ -111,23 +112,42 @@ app.get('/api/rooms/:id', (req, res) => {
   const roomMatch = rooms.get(req.params.id);
 
   if (roomMatch) {
-    console.log('Found requested room ' + roomMatch.id);
     res.json({ ok: true, rid: roomMatch.id });
   } else res.json({ ok: false });
 });
 
-app.get('/api/newroom/', (req, res) => {
-  console.log('new room requested');
+app.post('/api/room/new', (req, res) => {
   const newRoom = createRoom();
   console.log('Created new room: ' + newRoom.id);
   res.json({ ok: true, rid: newRoom.id, hostUser: newRoom.hostUser });
 });
 
-app.delete('/api/closeroom/:id', (req, res) => {
-  const roomId = req.params.id;
-  const success = deleteRoom(roomId);
-  if (success) res.sendStatus(200);
-  else res.sendStatus(404);
+app.post('/api/room/:id/room-action', async (req, res) => {
+  const { id } = req.params;
+  const { userId, action, data } = req.body;
+  const roomMatch = rooms.get(id);
+  if (roomMatch) {
+    const actionRes = await roomMatch.doRoomAction(userId, action, data);
+    return res.json({
+      success: true,
+      data: actionRes || null,
+    });
+  }
+  return res.status(404).json({ success: false });
+});
+
+app.post('/api/room/:id/game-action', async (req, res) => {
+  const { id } = req.params;
+  const { userId, action, data } = req.body;
+  const roomMatch = rooms.get(id);
+  if (roomMatch) {
+    const actionRes = await roomMatch.doGameAction(userId, action, data);
+    return res.json({
+      success: true,
+      data: actionRes,
+    });
+  }
+  return res.status(404).json({ success: false });
 });
 
 // app.get('/api/canrejoin/:roomId/:socketId', (req, res) => {
