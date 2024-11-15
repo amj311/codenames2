@@ -1,7 +1,96 @@
+<script>
+import { mapStores } from "pinia";
+import { getCaptainsTeam } from "../../lib/services/GameHelpers"
+import { useGameStore } from "@/stores/game.store";
+import { useAppStore } from "@/stores/app.store";
+
+export default {
+  props: ["card", "freeRotate"],
+
+  data() {
+    return {
+      ...mapStores(useGameStore, useAppStore),
+      flipped: false,
+      anims: [],
+    }
+  },
+
+  methods: {
+    emitClick(event) {
+      this.$emit('tryFlip', { event, card: this.card })
+    },
+
+
+    removeAnim(id) {
+      this.anims = this.anims.filter(a => a.id != id)
+    },
+
+    // animateGoodFlip() {
+    //   const duration = 2000;
+    //   const id = `anim_${Date.now()}`
+    //   this.anims.push({ id, class: 'fade-up', duration, spriteText: '👍', size: '3rem' })
+    //   const app = this;
+    //   setTimeout(function () { app.removeAnim(id) }, duration)
+    // },
+
+    // animateBadFlip() {
+    //   const duration = 2000;
+    //   const id = `anim_${Date.now()}`
+    //   this.anims.push({ id, class: 'fade-down', duration, spriteText: '😥', size: '3rem' })
+    //   const app = this;
+    //   setTimeout(function () { app.removeAnim(id) }, duration)
+    // },
+    // animateAssassin() {
+    //   const duration = 1500;
+    //   const id = `anim_${Date.now()}`
+    //   this.anims.push({ id, class: 'fade-grow', duration, spriteImg: this.ninjasImgs.black, size: '3rem' })
+    //   const app = this;
+    //   setTimeout(function () { app.removeAnim(id) }, duration)
+    // },
+    animateTeamNinja() {
+      const duration = 1500;
+      const id = `anim_${Date.now()}`
+      this.anims.push({ id, ninja: this.appStore().teamImgs[this.card.teamId], class: `fade-grow`, duration, size: '3rem' })
+      const app = this;
+      setTimeout(function () { app.removeAnim(id) }, duration)
+    },
+  },
+
+  computed: {
+    isUserCaptain() {
+      if (getCaptainsTeam(this.gameStore().user, this.gameStore().gameState.teams)) return true;
+      else return false;
+    },
+
+    showTeamImg() {
+      return this.gameStore().gameState.winningCard && this.gameStore().gameState.winningCard.id === this.card.id;
+    },
+    teamImg() {
+      return this.gameStore().gameState.teams[this.card.teamId].img
+    },
+
+    isRevealed() {
+      return this.card.revealed;
+    }
+  },
+
+  watch: {
+    isRevealed() {
+      this.animateTeamNinja();
+      // if (res.wasTeamCard) this.animateGoodFlip(res.card.id);
+      // else if (res.card.teamId == this.gameState.teams.assassin.id) this.animateAssassin(res.card.id);
+      // else this.animateBadFlip(res.card.id)
+    }
+  }
+}
+</script>
+
+
 <template>
   <div
     class="wrapper"
     :class="{ flipped: card.revealed, freeRotate: freeRotate }"
+    :style="{ zIndex: anims.length > 0 ? 1 : 0 }"
   >
     <div class="card">
       <div
@@ -21,55 +110,43 @@
         :style="{ backgroundColor: card.color }"
         style="background-image: linear-gradient(35deg, transparent 30%, rgba(255, 255, 255, 0.267) 35%, transparent 45%, transparent 52%, rgba(255, 255, 255, 0.267) 57%, transparent 73%)"
       >
-        <img
+        <div
           v-if="showTeamImg"
           :src="teamImg"
-          style="width: 3em;"
+          style="width: 3em; aspect-ratio: 1; background-size: contain; background-position: center; background-repeat: no-repeat; "
           class="ui-raised"
+          :class="`bg-ninja-${appStore().teamImgs[card.teamId]}`"
         />
+      </div>
+    </div>
+
+    <div id="animationOverlay">
+      <div
+        v-for="anim in anims"
+        :key="anim.id"
+        class="track"
+        :class="anim.class"
+        :style="{ 'font-size': anim.spriteText ? anim.size : '0' }"
+      >
+        <div
+          class="sprite"
+          :class="`bg-ninja-${anim.ninja}`"
+          :style="{ 'animation-duration': anim.duration + 'ms', width: anim.size }"
+        >
+          {{ anim.spriteText }}
+          <!-- <img
+            class="spriteImg"
+            v-if="anim.spriteImg"
+            :src="anim.spriteImg"
+            :style="{ width: anim.size }"
+          /> -->
+        </div>
       </div>
     </div>
   </div>
 
 </template>
 
-<script>
-import { getCaptainsTeam } from "../../lib/services/GameHelpers"
-
-export default {
-  name: 'Card',
-  props: ["card", "freeRotate"],
-
-  data() {
-    return {
-      flipped: false,
-
-      state: this.$store.state,
-      gameState: this.$store.state.game,
-    }
-  },
-
-  methods: {
-    emitClick(event) {
-      this.$emit('tryFlip', { event, card: this.card })
-    }
-  },
-
-  computed: {
-    isUserCaptain() {
-      if (getCaptainsTeam(this.state.user, this.state.game.teams)) return true;
-      else return false;
-    },
-
-    showTeamImg() {
-      return this.gameState.winningCard && this.gameState.winningCard.id === this.card.id;
-    },
-    teamImg() {
-      return this.gameState.teams[this.card.teamId].img
-    }
-  }
-}
-</script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
@@ -119,6 +196,7 @@ export default {
   user-select: none;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  background: #fff;
 }
 
 .card-face>div {
@@ -181,4 +259,92 @@ export default {
   background-position: 0% 50%;
   background-size: 300% 300%;
 } */
+
+
+
+#animationOverlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+}
+
+#animationOverlay .track {
+  pointer-events: none;
+  user-select: none;
+  position: fixed;
+}
+
+#animationOverlay .track.fade-up {
+  transform: translate(-50%, -50%);
+  height: 3em;
+}
+
+#animationOverlay .track.fade-down {
+  transform: translate(-50%, 100%);
+  height: 3em;
+}
+
+#animationOverlay .track.fade-grow {
+  transform: translate(-50%, -50%);
+}
+
+#animationOverlay .track .sprite {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  transform: translate(-50%, -100%);
+  text-align: center;
+  width: 3rem;
+  aspect-ratio: 1;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.fade-up .sprite {
+  animation: fadeUp;
+}
+
+.fade-down .sprite {
+  animation: fadeDown;
+}
+
+.fade-grow .sprite {
+  animation: fadeGrow;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 1;
+    bottom: 0%
+  }
+
+  to {
+    opacity: 0;
+    bottom: 100%
+  }
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 1;
+    bottom: 100%
+  }
+
+  to {
+    opacity: 0;
+    bottom: 0%
+  }
+}
+
+@keyframes fadeGrow {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 50%) scale(1)
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, 50%) scale(5)
+  }
+}
 </style>

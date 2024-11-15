@@ -8,7 +8,12 @@ export const useGameStore = defineStore('game', {
   state: () => ({
     savedState: null,
     gameRoomId: null as string | null,
-    user: null as any,
+    user: {
+      id: '',
+      username: '',
+      isHost: false,
+      isPlayer: false,
+    },
     gameState: null as any,
     roomState: null as any,
     pingTimeout: null as any,
@@ -25,7 +30,7 @@ export const useGameStore = defineStore('game', {
       this.roomState = state;
     },
     setUser(user) {
-      this.user = user
+      this.user = user;
     },
     initPings() {
       if (this.pingTimeout) {
@@ -35,11 +40,7 @@ export const useGameStore = defineStore('game', {
     },
     async doPing() {
       try {
-        const { data } = await api.post('/room/' + this.gameRoomId + '/room-action/pingUser', {
-          userId: this.user.id,
-        });
-        this.gameState = data.game;
-        this.roomState = data.room;
+        await this.doRoomAction('pingUser');
         this.schedulePing();
       }
       catch (err) {
@@ -55,11 +56,38 @@ export const useGameStore = defineStore('game', {
 
     getUserById(userId) {
       return this.roomState.users.find((user) => user.id === userId);
-    }
+    },
+
+    async doGameAction(action, data?) {
+      const { data: resData } = await api.post('/room/' + this.gameRoomId + '/game-action/' + action, {
+        userId: this.user.id,
+        data,
+      });
+      if (!resData.success) {
+        throw new Error("Server Error");
+      }
+      this.setGameState(resData.game);
+      this.setRoomState(resData.room);
+      this.setUser(resData.user);
+      return resData.actionRes;
+    },
+    async doRoomAction(action, data?) {
+      const { data: resData } = await api.post('/room/' + this.gameRoomId + '/room-action/' + action, {
+        userId: this.user.id,
+        data,
+      });
+      if (!resData.success) {
+        throw new Error("Server Error");
+      }
+      this.setGameState(resData.game);
+      this.setRoomState(resData.room);
+      this.setUser(resData.user);
+      return resData.actionRes;
+    },
   },
   getters: {
     isHost(state) {
       return state.user && state.user.isHost;
-    }
+    },
   }
 })

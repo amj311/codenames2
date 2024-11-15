@@ -1,5 +1,13 @@
+import Team from "./Team"
+
 export default class Card {
-  constructor(id, word, team) {
+  id: number
+  word: string
+  teamId: string
+  color: string
+  revealed: boolean
+
+  constructor(id: number, word: string, team: Team) {
     this.id = id
     this.word = word
     this.teamId = team.id
@@ -7,10 +15,7 @@ export default class Card {
     this.revealed = false
   }
 
-  /**
-   * Sets the card as "revealed" and returns this.teamId
-   */
-  revealTeam() {
+  revealTeam(): string {
     this.revealed = true
     return this.teamId
   }

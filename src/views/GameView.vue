@@ -5,6 +5,7 @@
 import SwapView from '@/components/SwapView.vue';
 import { useGameStore } from '@/stores/game.store';
 import GameSetupView from './GameSetupView.vue';
+import GamePlayView from './GamePlayView.vue';
 import { computed } from 'vue';
 
 const Views = {
@@ -35,6 +36,10 @@ const currentView = computed(() => {
     >
       <template v-slot:setup>
         <GameSetupView />
+      </template>
+
+      <template v-slot:play>
+        <GamePlayView />
       </template>
 
       <template v-slot:loading>

@@ -110,6 +110,22 @@ app.post('/api/room/new', (req, res) => {
   res.json({ ok: true, rid: newRoom.id, hostUser: newRoom.hostUser });
 });
 
+
+app.post('/api/room/:id/join', async (req, res) => {
+  const { id } = req.params;
+  const roomMatch = rooms.get(id);
+  if (roomMatch) {
+    const newPlayer = await roomMatch.joinNewPlayer();
+    return res.json({
+      success: true,
+      user: newPlayer,
+      room: roomMatch.getRoomSummary(),
+      game: roomMatch.game,
+    });
+  }
+  return res.status(404).json({ success: false });
+});
+
 app.post('/api/room/:id/room-action/:action', async (req, res) => {
   const { id, action } = req.params;
   const { userId, data } = req.body;
@@ -119,6 +135,7 @@ app.post('/api/room/:id/room-action/:action', async (req, res) => {
     return res.json({
       success: true,
       actionRes,
+      user: roomMatch.users.get(userId),
       room: roomMatch.getRoomSummary(),
       game: roomMatch.game,
     });
@@ -135,6 +152,7 @@ app.post('/api/room/:id/game-action/:action', async (req, res) => {
     return res.json({
       success: true,
       actionRes,
+      user: roomMatch.users.get(userId),
       room: roomMatch.getRoomSummary(),
       game: roomMatch.game,
     });

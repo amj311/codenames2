@@ -2,7 +2,7 @@ import Card from '../entities/Card.js'
 import WordListService from './WordListService.js'
 
 export default class GenerateCardsService {
-  constructor() {}
+  constructor() { }
 
   /**
    *
@@ -11,18 +11,18 @@ export default class GenerateCardsService {
    * @returns An array of cards
    */
   generateCards(teams, wordList = null) {
-    let openCardIdxs = []
-    let usedWordIdxs = []
-    let cards = []
+    let openCardIdxs = [] as number[];
+    const usedWordIdxs = [] as number[];
+    const cards = [] as Card[];
 
-    let numCards = teams.reduce((total, team) => total + team.qty, 0)
-    let wordSet = wordList || this.getWordListService().getWordList()
+    const numCards = teams.reduce((total, team) => total + team.qty, 0)
+    const wordSet = wordList || this.getWordListService().getWordList()
     if (wordSet.length < numCards) throw new Error('Not enough words for cards!')
 
     for (let i = 0; i < numCards; i++) openCardIdxs.push(i)
 
     do {
-      let randIdx = openCardIdxs[Math.floor(Math.random() * openCardIdxs.length)]
+      const randIdx = openCardIdxs[Math.floor(Math.random() * openCardIdxs.length)]
       if (openCardIdxs.lastIndexOf(randIdx) < 0) continue
       openCardIdxs = openCardIdxs.filter((idx) => idx != randIdx)
 
@@ -43,7 +43,7 @@ export default class GenerateCardsService {
         teamIdx++
       } while (teamCap <= randIdx)
 
-      let card = new Card(randIdx, wordSet[wordIdx], team)
+      const card = new Card(randIdx, wordSet[wordIdx], team)
       cards.push(card)
     } while (openCardIdxs.length > 0)
 

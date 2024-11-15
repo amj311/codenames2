@@ -50,27 +50,20 @@ export default {
         // }))
       }
     },
-    joinGame(rid: string) {
-      const context = this;
-      this.$store.dispatch('openModal', {
-        msg: "Enter a nickname:",
-        form: 'nickname',
-        isValid: () => { return false },
-        onNO: () => { },
-        onOK: () => {
-          api.get(context.apiUrl + '/rooms/' + rid.toLowerCase()).then(res => {
-            if (!res.data.ok) {
-              context.$store.dispatch("publishNotif", new Notification({
-                type: "err",
-                msg: "Could not find room " + rid.toUpperCase()
-              }))
-            }
-            else {
-              context.$store.dispatch('joinGameRoom', res.data.rid);
-            }
-          })
-        },
-      })
+    async joinGame(rid: string) {
+      try {
+        const { data } = await api.post(this.apiUrl + '/room/' + rid + '/join');
+        this.gameStore.setUser(data.user);
+        this.gameStore.loadGameRoom(data.room.id);
+        this.$router.push('/play');
+      }
+      catch (err) {
+        console.error(err);
+        // this.$store.dispatch("publishNotif", new Notification({
+        //   type: "err",
+        //   msg: "Server Error"
+        // }))
+      }
     },
 
     checkForReconnection() {

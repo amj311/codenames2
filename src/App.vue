@@ -2,15 +2,7 @@
   setup
   lang="ts"
 >
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-import PlayView from './components/PlayView.vue'
-import StartView from './components/StartView.vue'
-import Modal from './components/Modal.vue'
-import * as wordSet from './assets/words/test_rel.json';
-import { useGameStore } from './stores/game.store'
-
-const gameStore = useGameStore();
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
@@ -244,22 +236,21 @@ button i.material-icons {
 
 .ui-raised,
 .ui-block {
-  box-shadow: 1px 1px 3px #0005;
+  filter: drop-shadow(1px 1px 3px #0005);
 }
 
 img.ui-raised {
   filter: drop-shadow(1px 1px 3px #0004);
-  box-shadow: none;
 }
 
 .ui-raised.ui-pressable:hover,
 .ui-raised.ui-pressable:focus {
-  box-shadow: 3px 3px 5px 0px #0004;
+  filter: drop-shadow(3px 3px 5px 0px #0004);
   transform: translateY(-1px);
 }
 
 .ui-raised.ui-pressable:active {
-  box-shadow: 1px 2px 4px 0px #0005;
+  filter: drop-shadow(1px 2px 4px 0px #0005);
   transform: translateY(0px);
 }
 
