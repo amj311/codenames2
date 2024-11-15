@@ -39,7 +39,16 @@ export default class GameRoom {
     });
   }
 
-  registerNewUser(userData: any) {
+  public rejoinUser(userData) {
+    const existingUser = this.users.get(userData.id);
+    if (existingUser) {
+      existingUser.connection.ping();
+      return this.users.get(userData.id);
+    }
+    return this.registerNewUser(userData);
+  }
+
+  registerNewUser(userData) {
     const newUserId = userIds.getNew();
     const newUser = {
       id: newUserId,
@@ -113,7 +122,7 @@ export default class GameRoom {
         if (!user) {
           throw new Error('User not found in room!');
         };
-        user.connection.lastPing = Date.now();
+        user.connection.ping();
       },
 
       async updateUserData(userId: string, newUserData: any) {

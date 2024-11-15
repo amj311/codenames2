@@ -112,11 +112,11 @@ export default {
     },
 
     leaveRoom() {
-      this.$store.dispatch("leaveRoom");
+      // this.$store.dispatch("leaveRoom");
     },
 
     closeRoom() {
-      this.$store.dispatch("closeRoom");
+      // this.$store.dispatch("closeRoom");
     },
 
     updateTeamCardsByAvailableSpace() {
@@ -168,11 +168,11 @@ export default {
     },
 
     previewCards() {
-      const cards = [];
+      const cards = [] as any[];
       let i = 0;
-      for (const team of Object.values(this.gameState.teams)) {
+      for (const team of Object.values(this.gameState.teams) as any[]) {
         for (let j = 0; j < this.teamQty[team.id]; j++) {
-          cards.push({ color: team.color, idx: i })
+          cards.push({ color: team.color, idx: i } as any)
           i++;
         }
       }
@@ -183,9 +183,11 @@ export default {
 
     codeMasters() {
       const masters = Array.from(Object.values(this.gameState.teams)).reduce((teamsData, team) => {
-        if (team.isCompetitor && team.captainId) teamsData.push({ teamId: team.id, captain: team.captainId });
+        if (team.isCompetitor && team.captainId) {
+          teamsData.push({ teamId: team.id, captain: team.captainId } as any);
+        }
         return teamsData;
-      }, [])
+      }, [] as any[]);
       return masters;
     },
 

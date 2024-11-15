@@ -25,12 +25,15 @@ export const useGameStore = defineStore('game', {
     },
     setGameState(state) {
       this.gameState = state;
+      this.updateCache();
     },
     setRoomState(state) {
       this.roomState = state;
+      this.updateCache();
     },
     setUser(user) {
       this.user = user;
+      this.updateCache();
     },
     initPings() {
       if (this.pingTimeout) {
@@ -84,6 +87,15 @@ export const useGameStore = defineStore('game', {
       this.setUser(resData.user);
       return resData.actionRes;
     },
+    updateCache() {
+      sessionStorage.setItem('savedState', JSON.stringify({
+        gameRoomId: this.gameRoomId,
+        user: this.user,
+      }));
+    },
+    getCache() {
+      return JSON.parse(sessionStorage.getItem('savedState') || 'null');
+    }
   },
   getters: {
     isHost(state) {

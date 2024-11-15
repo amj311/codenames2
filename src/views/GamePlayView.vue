@@ -386,7 +386,7 @@ export default {
 div#boardWrapper {
   min-height: 95vh;
   width: 140vh;
-  max-width: 95vw;
+  max-width: calc(100vw - 3rem);
   display: flex;
   flex-direction: column;
 }

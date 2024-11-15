@@ -4,6 +4,12 @@ import bodyParser from 'body-parser';
 const { json, urlencoded } = bodyParser;
 // var lt = require ("localtunnel");
 // var open = require ("open");
+import GameRoom from './lib/server/GameRoom';
+import UniqueIdManager from './lib/services/UniqueIdManager';
+import { join } from 'path';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 import express from 'express';
 const app = express() as any;
@@ -43,11 +49,12 @@ app.use(cors(corsOptions));
 app.use(json());
 app.use(urlencoded({ extended: false }));
 // app.use(cookieParser())
-// app.use(express.static(join(__dirname, 'dist')))
+app.use(express.static('dist'));
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist/index.html'));
+});
 
 // ROOMS
-import GameRoom from './lib/server/GameRoom';
-import UniqueIdManager from './lib/services/UniqueIdManager';
 const roomIds = new UniqueIdManager(5);
 const rooms = new Map<string, GameRoom>(); //Map<roomId,GameRoom>
 const roomDeleteDelay = 1000 * 60 * 5;
@@ -70,7 +77,7 @@ function checkRoomStatus(roomId, alreadyInactive = false) {
         console.log('Room is still inactive. Will delete.');
         return deleteRoom(roomId);
       } else {
-        console.log('Room is inactive. Will check again...');
+        console.log('Room is inactive. Will check again.');
         setTimeout(() => checkRoomStatus(roomId, true), roomDeleteDelay);
       }
     } else {
@@ -94,15 +101,15 @@ function deleteRoom(roomId) {
 }
 
 // ROUTES
-app.get('/api/rooms/:id', (req, res) => {
-  if (req.params.id == 'all') return res.json(rooms.values());
+// app.get('/api/rooms/:id', (req, res) => {
+//   if (req.params.id == 'all') return res.json(rooms.values());
 
-  const roomMatch = rooms.get(req.params.id);
+//   const roomMatch = rooms.get(req.params.id);
 
-  if (roomMatch) {
-    res.json({ ok: true, rid: roomMatch.id });
-  } else res.json({ ok: false });
-});
+//   if (roomMatch) {
+//     res.json({ ok: true, rid: roomMatch.id });
+//   } else res.json({ ok: false });
+// });
 
 app.post('/api/room/new', (req, res) => {
   const newRoom = createRoom();
@@ -119,6 +126,23 @@ app.post('/api/room/:id/join', async (req, res) => {
     return res.json({
       success: true,
       user: newPlayer,
+      room: roomMatch.getRoomSummary(),
+      game: roomMatch.game,
+    });
+  }
+  return res.status(404).json({ success: false });
+});
+
+
+app.post('/api/room/:id/rejoin', async (req, res) => {
+  const { id } = req.params;
+  const { user } = req.body;
+  const roomMatch = rooms.get(id);
+  if (roomMatch) {
+    const joinedUser = await roomMatch.rejoinUser(user);
+    return res.json({
+      success: true,
+      user: joinedUser,
       room: roomMatch.getRoomSummary(),
       game: roomMatch.game,
     });
@@ -193,6 +217,10 @@ app.use(function (err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.send(err);
+});
+
+app.get('*', (req, res) => {
+  res.redirect('/');
 });
 
 // SOCKETS
