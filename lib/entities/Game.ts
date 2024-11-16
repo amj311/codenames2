@@ -166,4 +166,12 @@ export default class Game {
   getCardById(id) {
     return this.cards.find((c) => c.id == id)
   }
+
+  removePlayer(userId) {
+    for (const team of Object.values(this.teams)) {
+      if (team.captainId == userId) {
+        team.captainId = null
+      }
+    }
+  }
 }

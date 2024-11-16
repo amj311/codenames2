@@ -1,9 +1,5 @@
-// import { join } from 'path'
-// import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser';
 const { json, urlencoded } = bodyParser;
-// var lt = require ("localtunnel");
-// var open = require ("open");
 import GameRoom from './lib/server/GameRoom';
 import UniqueIdManager from './lib/services/UniqueIdManager';
 import { join } from 'path';
@@ -13,42 +9,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 import express from 'express';
 const app = express() as any;
-// var server = require('http').createServer(app);
-// var socketio = require('socket.io').listen(server);
 
 import cors from 'cors';
-// require("dotenv").config();
 
 const port = process.env.PORT || 3300;
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
 
-// if (process.env.USE_TUNNEL != 0) {
-//   (async () => {
-//     console.log("Getting tunnel...")
-//     const tunnel = await lt({
-//       port,
-//       subdomain: "bom-codenames"
-//     });
-
-//     // the assigned public url for your tunnel
-//     console.log("App on network: "+tunnel.url);
-//     open(tunnel.url)
-
-//     tunnel.on('close', () => {
-//       // tunnels are closed
-//       console.log(`Network tunnel to port ${port} was closed.`)
-//     });
-//   })();
-// }
-
 const corsOptions = {};
 
 app.use(cors(corsOptions));
 app.use(json());
 app.use(urlencoded({ extended: false }));
-// app.use(cookieParser())
+
+// STATIC SITE
 app.use(express.static('dist'));
 app.get('*', (req, res) => {
   res.sendFile(join(__dirname, 'dist/index.html'));
@@ -56,7 +31,7 @@ app.get('*', (req, res) => {
 
 // ROOMS
 const roomIds = new UniqueIdManager(5);
-const rooms = new Map<string, GameRoom>(); //Map<roomId,GameRoom>
+const rooms = new Map<string, GameRoom>();
 const roomDeleteDelay = 1000 * 60 * 5;
 
 function createRoom() {
@@ -88,7 +63,6 @@ function checkRoomStatus(roomId, alreadyInactive = false) {
 }
 
 function deleteRoom(roomId) {
-  console.log('DELETING ', roomId);
   const roomMatch = rooms.get(roomId);
   if (roomMatch) {
     rooms.delete(roomMatch.id);
@@ -100,16 +74,6 @@ function deleteRoom(roomId) {
   }
 }
 
-// ROUTES
-// app.get('/api/rooms/:id', (req, res) => {
-//   if (req.params.id == 'all') return res.json(rooms.values());
-
-//   const roomMatch = rooms.get(req.params.id);
-
-//   if (roomMatch) {
-//     res.json({ ok: true, rid: roomMatch.id });
-//   } else res.json({ ok: false });
-// });
 
 app.post('/api/room/new', (req, res) => {
   const newRoom = createRoom();
@@ -120,8 +84,10 @@ app.post('/api/room/new', (req, res) => {
 
 app.post('/api/room/:id/join', async (req, res) => {
   const { id } = req.params;
-  const roomMatch = rooms.get(id);
+  console.log('Joining room...', id);
+  const roomMatch = rooms.get(id.toLowerCase());
   if (roomMatch) {
+    console.log("found room")
     const newPlayer = await roomMatch.joinNewPlayer();
     return res.json({
       success: true,
@@ -130,6 +96,7 @@ app.post('/api/room/:id/join', async (req, res) => {
       game: roomMatch.game,
     });
   }
+  console.log('Could not find room');
   return res.status(404).json({ success: false });
 });
 
@@ -137,7 +104,7 @@ app.post('/api/room/:id/join', async (req, res) => {
 app.post('/api/room/:id/rejoin', async (req, res) => {
   const { id } = req.params;
   const { user } = req.body;
-  const roomMatch = rooms.get(id);
+  const roomMatch = rooms.get(id.toLowerCase());
   if (roomMatch) {
     const joinedUser = await roomMatch.rejoinUser(user);
     return res.json({
@@ -153,7 +120,7 @@ app.post('/api/room/:id/rejoin', async (req, res) => {
 app.post('/api/room/:id/room-action/:action', async (req, res) => {
   const { id, action } = req.params;
   const { userId, data } = req.body;
-  const roomMatch = rooms.get(id);
+  const roomMatch = rooms.get(id.toLowerCase());
   if (roomMatch) {
     const actionRes = await roomMatch.doRoomAction(userId, action, data);
     return res.json({
@@ -170,7 +137,7 @@ app.post('/api/room/:id/room-action/:action', async (req, res) => {
 app.post('/api/room/:id/game-action/:action', async (req, res) => {
   const { id, action } = req.params;
   const { userId, data } = req.body;
-  const roomMatch = rooms.get(id);
+  const roomMatch = rooms.get(id.toLowerCase());
   if (roomMatch) {
     const actionRes = await roomMatch.doGameAction(userId, action, data);
     return res.json({
@@ -184,28 +151,6 @@ app.post('/api/room/:id/game-action/:action', async (req, res) => {
   return res.status(404).json({ success: false });
 });
 
-// app.get('/api/canrejoin/:roomId/:socketId', (req, res) => {
-//   const roomId = req.params.roomId;
-//   const socketId = req.params.socketId;
-//   let canReconnect = false;
-//   console.log('Checking if can reconnect: ', socketId);
-
-//   const roomMatch = rooms.get(roomId);
-
-//   if (roomMatch) {
-//     console.log('Found requested room ' + roomMatch.id);
-//     canReconnect = roomMatch.canReconnect(socketId);
-//     console.log('Can reconnect: ' + canReconnect);
-//   }
-
-//   res.json({ ok: canReconnect });
-// });
-
-// catch 404 and forward to error handler
-// app.use(function (req, res, next) {
-//   next(createError(404))
-// })
-
 // error handler
 app.use(function (err, req, res, next) {
   console.log('Error!');
@@ -218,40 +163,3 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.send(err);
 });
-
-app.get('*', (req, res) => {
-  res.redirect('/');
-});
-
-// SOCKETS
-// socketio.on('connection', (socket) => {
-//   console.log("New socket connected: "+socket.id)
-
-//   socket.on('joinRoom', (roomId, userData, cb) => {
-//     console.log("requesting room id: "+roomId)
-
-//     let roomMatch = rooms.get(roomId)
-
-//     if (roomMatch) {
-//       console.log('Found requested room '+roomMatch.id)
-//       roomMatch.addPlayer(socket, userData)
-//       cb(userData);
-//     }
-//     else {
-//       console.log("Could not find room: "+roomId)
-//       socket.emit('err',"Could not find room: "+roomId)
-//     }
-//   })
-
-//   socket.on('rejoinRoom', (roomId, socketId, cb) => {
-//     let roomMatch = rooms.get(roomId)
-//     let success = false;
-//     if (roomMatch) {
-//       console.log('Rejoining socket to '+roomMatch.id)
-//       success = roomMatch.handleReturningPlayer(socket, socketId, cb)
-//       console.log("Room accepts return: "+success);
-//     }
-//     if (!success) socket.emit('err',"Could not reconnect to room: "+roomId)
-//   })
-
-// })

@@ -18,7 +18,7 @@ const Views = {
 const gameStore = useGameStore();
 
 const currentView = computed(() => {
-  if (gameStore.gameState) {
+  if (gameStore.user && gameStore.gameState) {
     if (gameStore.gameState.state.isInPlay) {
       return Views.Play;
     }
@@ -32,7 +32,7 @@ async function attemptRejoinRoom() {
   console.log('Attempting to rejoin room...');
   const cache = gameStore.getCache();
   console.log(cache);
-  if (!cache) return;
+  if (!cache || !cache.gameRoomId || !cache.user) return;
 
   try {
     const { data } = await api.post('/room/' + cache.gameRoomId + '/rejoin', {
@@ -74,4 +74,8 @@ async function attemptRejoinRoom() {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.game-wrapper {
+  min-width: 70vw;
+}
+</style>

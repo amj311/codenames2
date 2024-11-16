@@ -125,13 +125,20 @@ export default class GameRoom {
         user.connection.ping();
       },
 
-      async updateUserData(userId: string, newUserData: any) {
+      updateUserData(userId: string, newUserData: any) {
         const user = room.users.get(userId);
         for (const key of Object.keys(newUserData)) {
           user[key] = newUserData[key];
         }
-        console.log(user)
-      }
+      },
+
+      leaveRoom(userId: string) {
+        if (userId === room.hostUserId) {
+          this.hostUserId = null;
+        }
+        room.game.removePlayer(userId);
+        room.users.delete(userId);
+      },
     }
   }
 

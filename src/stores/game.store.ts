@@ -95,6 +95,14 @@ export const useGameStore = defineStore('game', {
     },
     getCache() {
       return JSON.parse(sessionStorage.getItem('savedState') || 'null');
+    },
+    clear() {
+      this.gameRoomId = null;
+      this.setUser(null);
+      this.setGameState(null);
+      this.setRoomState(null);
+      clearInterval(this.pingTimeout);
+      this.pingTimeout = null;
     }
   },
   getters: {

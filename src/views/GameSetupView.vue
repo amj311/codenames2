@@ -111,12 +111,17 @@ export default {
       }
     },
 
-    leaveRoom() {
-      // this.$store.dispatch("leaveRoom");
+    async leaveRoom() {
+      await this.gameStore().doRoomAction('leaveRoom');
+      this.gameStore().clear();
+      this.$router.push('/');
     },
 
-    closeRoom() {
-      // this.$store.dispatch("closeRoom");
+    async closeRoom() {
+      // await this.gameStore().doGameAction('closeRoom');
+      // this.gameStore().clear();
+      // this.$router.push('/');
+      this.leaveRoom();
     },
 
     updateTeamCardsByAvailableSpace() {
