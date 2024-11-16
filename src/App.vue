@@ -222,7 +222,8 @@ button i.material-icons {
   font-size: 1.25em;
 }
 
-[disabled="disabled"] {
+[disabled="disabled"],
+[disabled] {
   pointer-events: none;
   opacity: .5;
 }

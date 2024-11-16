@@ -1,6 +1,6 @@
 import { RevealCardResponse } from '../server/dto/RevealCard.js'
 import GenerateCardsService from '../services/GenerateCardsService.js'
-import { waitingToStart, guessing, gameOver } from './GameStates.js'
+import { GameStates } from './GameStates.js'
 import Team from './Team.js'
 
 const defaultConfig = {
@@ -13,13 +13,15 @@ const defaultConfig = {
 
 export default class Game {
   public config = defaultConfig;
-  public state = waitingToStart;
+  public state = GameStates.waitingToStart;
   public teams!: Record<string, Team>;
   public cards: any[] = [];
   public teamOfTurn: Team | null = null;
   public winner: Team | null = null;
   public winningCard: any = null;
-  public usedGuesses: number = 0;
+  public numMatchesFound: number = 0;
+  public hintOfTurn = '';
+  public numHintMatches: 0;
 
   constructor(config = null) {
     this.configure(config);
@@ -77,19 +79,26 @@ export default class Game {
         }
         game.configureTeams();
         game.cards = new GenerateCardsService().generateCards(Object.values(game.teams));
-        game.state = guessing;
+        game.state = GameStates.turnPrep;
         game.teamOfTurn = game.teams.teamOne;
       },
 
       endGame() {
-        if (!game.state.canEndGame) return
-        game.state = gameOver;
+        if (!game.state.canEndGame) return;
+        game.state = GameStates.gameOver;
       },
 
       exitGame() {
-        if (!game.state.canEndGame) return
-        game.resetGame()
-        game.state = waitingToStart
+        if (!game.state.canEndGame) return;
+        game.resetGame();
+        game.state = GameStates.waitingToStart;
+      },
+
+      startTurn(_, { hint, numHintMatches }) {
+        game.state = GameStates.guessing;
+        game.numMatchesFound = 0;
+        game.hintOfTurn = hint;
+        game.numHintMatches = numHintMatches;
       },
 
       revealCard(_, { cardId }) {
@@ -100,7 +109,7 @@ export default class Game {
 
         card.revealTeam()
         cardTeam.pts++
-        game.usedGuesses++
+        game.numMatchesFound++
 
         console.log('\nFlipped card!')
         console.log('teamOfTurn:', game.teamOfTurn!.id)
@@ -109,14 +118,25 @@ export default class Game {
         console.log('cardTeam qty:', cardTeam.qty)
 
         if (cardTeam.pts === cardTeam.qty) {
-          game.winner = cardTeam
-          game.winningCard = card
-          game.state = gameOver
-        } else if (!cardBelongsToTeamOfTurn) {
-          game.advanceTurn()
+          game.winner = cardTeam;
+          game.winningCard = card;
+          game.state = GameStates.gameOver;
+        } else if (!cardBelongsToTeamOfTurn || game.numMatchesFound > game.numHintMatches) {
+          game.actions.advanceTurn();
         }
 
         return new RevealCardResponse(card, cardBelongsToTeamOfTurn, game)
+      },
+
+
+      advanceTurn() {
+        if (!game.state.canRevealCard) return;
+        if (!game.teamOfTurn) game.teamOfTurn = game.teams.teamOne;
+        else {
+          game.teamOfTurn = game.teamOfTurn.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
+        }
+        game.numMatchesFound = 0;
+        game.state = GameStates.turnPrep;
       }
     }
   }
@@ -136,17 +156,6 @@ export default class Game {
   // }
 
 
-
-  advanceTurn() {
-    if (!this.state.canRevealCard) return
-    if (!this.teamOfTurn) this.teamOfTurn = this.teams.teamOne
-    else {
-      if (this.teamOfTurn == this.teams.teamOne) this.teamOfTurn = this.teams.teamTwo
-      else this.teamOfTurn = this.teams.teamOne
-    }
-    this.usedGuesses = 0
-  }
-
   resetGame() {
     for (const team of Object.values(this.teams)) {
       team.pts = 0
@@ -155,7 +164,7 @@ export default class Game {
     this.teamOfTurn = null
     this.winner = null
     this.winningCard = null
-    this.usedGuesses = 0
+    this.numMatchesFound = 0
   }
 
   getCardTeam(card) {
