@@ -221,6 +221,7 @@ export default {
   width: 100%;
   word-wrap: break-word;
   font-size: .9em;
+  text-align: center;
 }
 
 .back {
