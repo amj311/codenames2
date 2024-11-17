@@ -18,8 +18,6 @@ export default {
                 numTeamCards: 9,
                 numBystanders: null,
             },
-            showUsernameModal: false,
-            tmpUsername: '',
             hostUrl: new URL(window.location.href),
             joinUrl: '',
             joinUrlQr: '',
@@ -29,10 +27,6 @@ export default {
     async mounted() {
         this.joinUrl = this.hostUrl.origin + "?join=" + this.gameStore().gameRoomId!.toUpperCase();
         this.joinUrlQr = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(this.joinUrl);
-
-        if (!this.user.username) {
-            this.openUsernameModal();
-        }
     },
 
     watch: {
@@ -52,27 +46,6 @@ export default {
 
 
     methods: {
-
-
-        openUsernameModal() {
-            this.tmpUsername = this.user.username;
-            this.showUsernameModal = true;
-        },
-
-        async saveUsername() {
-            try {
-                const data = {
-                    username: this.tmpUsername,
-                };
-                console.log(this.gameStore())
-                await this.gameStore().doRoomAction('updateUserData', data);
-                this.showUsernameModal = false;
-            }
-            catch (err) {
-                console.error(err);
-            }
-        },
-
         async pushTmpConfig() {
             try {
                 await this.gameStore().doGameAction('configure', this.tmpConfig);
@@ -220,42 +193,6 @@ export default {
 
 <template>
     <div id="setup">
-        <div id="roomInfo">
-            <img
-                id="logo"
-                src="@/assets/logos/text.png"
-                style="width: 8rem"
-            />
-            <div style="display: flex; flex-grow: 1; gap: 0rem">
-                <div id="roomCode">
-                    <i class="material-icons">tap_and_play</i>
-                    &nbsp;
-                    <span class="code-cap">{{ gameStore().gameRoomId }}</span>
-                </div>
-                <div style="flex-grow: 1"></div>
-                <div
-                    @click="openUsernameModal"
-                    class="button text"
-                    style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-                >
-                    <i class="material-icons">person</i>&nbsp;
-                    <span
-                        class="user-username"
-                        style="display: flex; align-items: center; justify-content: center;"
-                    >
-                        {{ user.username }}
-                    </span>
-                </div>
-                <div
-                    @click="leaveRoom"
-                    class="button text"
-                    style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-                >
-                    <i class="material-icons">logout</i>
-                </div>
-            </div>
-        </div>
-
         <div id="teams">
             <div
                 id="codeMasterDisplay"
@@ -426,26 +363,6 @@ export default {
                 >Waiting to begin...</div>
             </div>
         </div>
-
-        <!-- Just for preloading the ninja images -->
-        <div style="visibility:hidden; height: 0px; overflow:hidden">
-            <img :src="gameState.teams.teamOne.img">
-            <img :src="gameState.teams.teamTwo.img">
-            <img :src="gameState.teams.bystander.img">
-            <img :src="gameState.teams.assassin.img">
-        </div>
-    </div>
-
-    <div
-        v-if="showUsernameModal"
-        class="ui-block username-modal"
-    >
-        <h3>Choose a username</h3>
-        <input v-model="tmpUsername">
-        <button
-            class="ui-pressable ui-shiny ui-raised"
-            @click="saveUsername"
-        >Save</button>
     </div>
 </template>
 
@@ -456,37 +373,9 @@ export default {
 #setup {
     max-width: 100vw;
     box-sizing: border-box;
-    padding: 1rem;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-}
-
-#roomInfo {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3em;
-    gap: 1em;
-    margin-bottom: 1rem;
-}
-
-#roomCode {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    letter-spacing: .1rem;
-}
-
-.code-cap {
-    text-transform: uppercase;
-}
-
-.ui-block {
-    text-align: left;
+    min-height: calc(100vh - 6rem);
 }
 
 #settings {
@@ -641,18 +530,5 @@ div#teamLists {
     #settings>div.ui-block {
         width: 100%;
     }
-}
-
-
-.username-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    translate: -50% -50%;
-    background: #fff;
-}
-
-.username-modal input {
-    font-size: 1.2em;
 }
 </style>

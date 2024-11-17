@@ -90,8 +90,7 @@ export default class Game {
 
       exitGame() {
         if (!game.state.canEndGame) return;
-        game.resetGame();
-        game.state = GameStates.waitingToStart;
+        game.actions.resetGame();
       },
 
       startTurn(_, { hint, numHintMatches }) {
@@ -137,6 +136,18 @@ export default class Game {
         }
         game.numMatchesFound = 0;
         game.state = GameStates.turnPrep;
+      },
+
+      resetGame() {
+        for (const team of Object.values(game.teams)) {
+          team.pts = 0
+        }
+        game.cards = [];
+        game.teamOfTurn = null
+        game.winner = null
+        game.winningCard = null
+        game.numMatchesFound = 0
+        game.state = GameStates.waitingToStart;
       }
     }
   }
@@ -154,18 +165,6 @@ export default class Game {
   //     }
   //     return this
   // }
-
-
-  resetGame() {
-    for (const team of Object.values(this.teams)) {
-      team.pts = 0
-    }
-    this.cards = [];
-    this.teamOfTurn = null
-    this.winner = null
-    this.winningCard = null
-    this.numMatchesFound = 0
-  }
 
   getCardTeam(card) {
     const team = Array.from(Object.values(this.teams)).find((t) => t.id == card.teamId)
