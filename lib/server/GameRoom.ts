@@ -120,7 +120,7 @@ export default class GameRoom {
       async pingUser(userId: string) {
         const user = room.users.get(userId);
         if (!user) {
-          throw new Error('User not found in room!');
+          return;
         };
         user.connection.ping();
       },

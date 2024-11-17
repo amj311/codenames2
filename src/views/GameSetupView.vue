@@ -112,6 +112,7 @@ export default {
         },
 
         async leaveRoom() {
+            if (!confirm("Are you sure you want to leave?")) return;
             await this.gameStore().doRoomAction('leaveRoom');
             this.gameStore().clear();
             this.$router.push('/');
@@ -225,23 +226,33 @@ export default {
                 src="@/assets/logos/text.png"
                 style="width: 8rem"
             />
-            <div id="roomCode">
-                <i class="material-icons">tap_and_play</i>
-                &nbsp;
-                <span class="code-cap">{{ gameStore().gameRoomId }}</span>
-            </div>
-            <div style="flex-grow: 1"></div>
-            <div
-                @click="openUsernameModal"
-                style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-            >
-                <i class="material-icons">person</i>&nbsp;
-                <span
-                    class="user-username"
-                    style="display: flex; align-items: center; justify-content: center;"
+            <div style="display: flex; flex-grow: 1; gap: 0rem">
+                <div id="roomCode">
+                    <i class="material-icons">tap_and_play</i>
+                    &nbsp;
+                    <span class="code-cap">{{ gameStore().gameRoomId }}</span>
+                </div>
+                <div style="flex-grow: 1"></div>
+                <div
+                    @click="openUsernameModal"
+                    class="button text"
+                    style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
                 >
-                    {{ user.username }}
-                </span>
+                    <i class="material-icons">person</i>&nbsp;
+                    <span
+                        class="user-username"
+                        style="display: flex; align-items: center; justify-content: center;"
+                    >
+                        {{ user.username }}
+                    </span>
+                </div>
+                <div
+                    @click="leaveRoom"
+                    class="button text"
+                    style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
+                >
+                    <i class="material-icons">logout</i>
+                </div>
             </div>
         </div>
 
@@ -401,33 +412,19 @@ export default {
         </div>
 
 
-        <div
-            id="bottomBar"
-            class="ui-block"
-        >
-            <button
-                v-if="user.isHost"
-                class="inline ui-pressable ui-shiny"
-                style="background: transparent; color: inherit;"
-                @click="closeRoom"
-            ><i class="material-icons">cancel</i> Close Room</button>
-            <button
-                v-else
-                class="inline ui-pressable ui-shiny"
-                style="background: transparent; color: inherit;"
-                @click="leaveRoom"
-            ><i class="material-icons">cancel</i>Leave Room</button>
-
-            <button
-                id="play"
-                v-if="canStartGame"
-                class="inline ui-pressable ui-shiny ui-raised"
-                @click="startGame"
-            >PLAY!</button>
-            <div
-                v-else
-                style="text-align:right; font-size:.8em; font-weight:bold"
-            >Waiting to begin...</div>
+        <div id="bottomBar">
+            <div>
+                <button
+                    id="play"
+                    v-if="canStartGame"
+                    class="inline ui-pressable ui-shiny ui-raised"
+                    @click="startGame"
+                >PLAY!</button>
+                <div
+                    v-else
+                    style="text-align:right; font-size:.8em; font-weight:bold"
+                >Waiting to begin...</div>
+            </div>
         </div>
 
         <!-- Just for preloading the ninja images -->
@@ -441,11 +438,14 @@ export default {
 
     <div
         v-if="showUsernameModal"
-        class="modal username-modal"
+        class="ui-block username-modal"
     >
         <h3>Choose a username</h3>
         <input v-model="tmpUsername">
-        <button @click="saveUsername">Save</button>
+        <button
+            class="ui-pressable ui-shiny ui-raised"
+            @click="saveUsername"
+        >Save</button>
     </div>
 </template>
 
@@ -459,14 +459,15 @@ export default {
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    /* gap: 1rem; */
+    min-height: 100vh;
 }
 
 #roomInfo {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    font-size: 1.4em;
+    justify-content: center;
+    font-size: 1.3em;
     gap: 1em;
     margin-bottom: 1rem;
 }
@@ -477,6 +478,7 @@ export default {
     font-weight: bold;
     flex-wrap: wrap;
     justify-content: space-around;
+    letter-spacing: .1rem;
 }
 
 .code-cap {
@@ -622,10 +624,12 @@ div#teamLists {
     font-size: 1.25em;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    flex-grow: 1;
+    min-height: 8rem;
 }
 
-button#play {
+#bottomBar>div {
     animation: pulse 500ms infinite alternate;
 }
 
@@ -640,17 +644,12 @@ button#play {
 }
 
 
-.modal.username-modal {
+.username-modal {
     position: fixed;
-    width: 80%;
-    max-width: 25rem;
     top: 50%;
     left: 50%;
     translate: -50% -50%;
     background: #fff;
-    border-radius: .5rem;
-    box-shadow: 0 3px 8px #0005;
-    padding: 1em;
 }
 
 .username-modal input {
