@@ -187,8 +187,11 @@ export default {
             id="topBar"
             class="ui-raised"
         >
-            <div id="roomCode"><i class="material-icons">tap_and_play</i><span>{{ gameStore().gameRoomId.toUpperCase()
-                    }}</span></div>
+            <div id="roomCode">
+                <i class="material-icons">tap_and_play</i>
+                &nbsp;
+                <span>{{ gameStore().gameRoomId.toUpperCase()}}</span>
+            </div>
             <div style="flex-grow:1;" />
             <div
                 v-if="gameState.teamOfTurn"
@@ -201,12 +204,14 @@ export default {
                     v-if="gameState.state.isGameOver"
                     class="ui-raised ui-pressable ui-shiny"
                 >PLAY AGAIN</button>
-                <button
+                <div
                     @click="promptEndGame"
                     v-if="!gameState.state.isGameOver"
-                    class="ui-raised ui-pressable ui-shiny"
-                    :style="{ 'background-color': '#888' }"
-                >END GAME</button>
+                    class="button text"
+                    style="font-size: 1.2rem"
+                >
+                    <i class="material-icons">logout</i>
+                </div>
             </div>
         </div>
 
@@ -257,7 +262,7 @@ export default {
                     <button
                         @click="initAdvanceTurn"
                         v-if="canFlip"
-                        class="ui-raised ui-pressable ui-shiny"
+                        class="ui-raised ui-pressable ui-shiny inline"
                         :style="{ 'background-color': gameState.teamOfTurn.color }"
                     >END TURN</button>
                 </div>
@@ -277,9 +282,10 @@ export default {
                             :max="numCardsRemainingForTeamOfTurn"
                             :min="1"
                         />
+                        &nbsp;
                         <button
                             @click="startTurn"
-                            class="ui-raised ui-pressable ui-shiny"
+                            class="ui-raised ui-pressable ui-shiny inline"
                             :style="{ 'background-color': gameState.teamOfTurn.color }"
                         >
                             START TURN
@@ -362,7 +368,6 @@ div#topBar {
 }
 
 #roomCode {
-    font-size: 1.3em;
     display: flex;
     align-items: center;
     font-weight: bold;

@@ -4,292 +4,211 @@ import { mapStores } from 'pinia'
 import { useGameStore } from '@/stores/game.store';
 
 export default {
-  name: 'Start',
-  components: {
-  },
-  data() {
-    return ({
-      apiUrl: '',
-      showMenu: false,
-      activeMenu: 'new',
-      newGameMode: 'party',
-      roomToJoin: '',
-    })
-  },
+	components: {
+	},
+	data() {
+		return ({
+			apiUrl: '',
+			showMenu: false,
+			activeMenu: 'new',
+			newGameMode: 'party',
+			roomToJoin: '',
+		})
+	},
 
-  mounted() {
-    this.checkForReconnection();
-    this.checkForJoinParam();
-  },
+	mounted() {
+	},
 
-  computed: {
-    ...mapStores(useGameStore),
-  },
+	computed: {
+		...mapStores(useGameStore),
+	},
 
-  methods: {
-    openMenu(menu) {
-      this.showMenu = true;
-      this.activeMenu = menu;
-    },
-    closeMenu() {
-      console.log("closing menu");
-      this.showMenu = false;
-    },
-    async startGame() {
-      try {
-        const { data } = await api.post(this.apiUrl + '/room/new');
-        this.gameStore.setUser(data.hostUser);
-        this.gameStore.loadGameRoom(data.rid);
-        this.$router.push('/play');
-      }
-      catch (err) {
-        console.error(err);
-        // this.$store.dispatch("publishNotif", new Notification({
-        //   type: "err",
-        //   msg: "Server Error"
-        // }))
-      }
-    },
-    async joinGame(rid: string) {
-      try {
-        const { data } = await api.post(this.apiUrl + '/room/' + rid + '/join');
-        this.gameStore.setUser(data.user);
-        this.gameStore.loadGameRoom(data.room.id);
-        this.$router.push('/play');
-      }
-      catch (err) {
-        console.error(err);
-        // this.$store.dispatch("publishNotif", new Notification({
-        //   type: "err",
-        //   msg: "Server Error"
-        // }))
-      }
-    },
-
-    checkForReconnection() {
-      const json = localStorage.getItem("snapshot")
-      const oldConn = json ? JSON.parse(json) : null;
-      if (!oldConn) return;
-
-
-      api.get(this.apiUrl + '/canrejoin/' + oldConn.roomId + "/" + oldConn.socketId).then(res => {
-        if (res.data.ok) {
-          const store = this.$store;
-          store.dispatch("publishNotif", new Notification({
-            sticky: true,
-            msg: `Would you like to reconnect to room ${oldConn.roomId.toUpperCase()}?`,
-            aff: {
-              txt: "Yes",
-              action: () => store.dispatch("attemptReconnect", oldConn)
-            },
-            neg: {
-              txt: "No",
-              action: () => localStorage.removeItem("snapshot")
-            }
-          }))
-        }
-      })
-
-    },
-
-    checkForJoinParam() {
-      const rid = new URLSearchParams(window.location.search).get("join")
-      if (rid != null) {
-        this.joinGame(rid);
-        window.history.pushState(null, document.title, window.location.origin)
-      }
-    }
-  }
+	methods: {
+		openMenu(menu) {
+			this.showMenu = true;
+			this.activeMenu = menu;
+		},
+		closeMenu() {
+			console.log("closing menu");
+			this.showMenu = false;
+		},
+		async startGame() {
+			try {
+				const { data } = await api.post(this.apiUrl + '/room/new');
+				this.gameStore.setUser(data.hostUser);
+				this.gameStore.loadGameRoom(data.rid);
+				this.$router.push('/play');
+			}
+			catch (err) {
+				console.error(err);
+			}
+		},
+		async joinGame(rid: string) {
+			try {
+				const { data } = await api.post(this.apiUrl + '/room/' + rid + '/join');
+				this.gameStore.setUser(data.user);
+				this.gameStore.loadGameRoom(data.room.id);
+				this.$router.push('/play');
+			}
+			catch (err) {
+				console.error(err);
+			}
+		},
+	}
 }
 </script>
 
 <template>
-  <div id="slideWrapper">
-    <div
-      id="slideContainer"
-      :class="{ slid: showMenu }"
-    >
-      <div id="main">
-        <button
-          @click="startGame"
-          class="ui-raised ui-pressable ui-shiny"
-        >New Game</button>
-        <button
-          @click="openMenu('join')"
-          class="ui-raised ui-pressable ui-shiny"
-        >Join a Game</button>
-      </div>
-      <div id="menus">
-        <div
-          id="menuWrpper"
-          class="ui-block"
-        >
-          <div id="topBar">
-            <div
-              id="closeMenu"
-              @click="closeMenu"
-            ><i class="material-icons">arrow_back</i></div>
-            <div style="width: 300%;">{{ activeMenu == 'new' ? 'Start A New Game' : 'Join A Game' }}</div>
-            <div></div>
-          </div>
-          <form
-            v-if="activeMenu == 'new'"
-            @submit.prevent="startGame"
-            id="newMenu"
-          >
-            <div
-              class="form-row"
-              id="mode"
-            >
-              <input
-                type="radio"
-                id="party"
-                v-model="newGameMode"
-                value="party"
-                hidden
-              >
-              <label
-                for="party"
-                class="ui-shiny ui-raised"
-                :class="{ 'ui-pressable': newGameMode != 'party' }"
-              >
-                <i class="material-icons">devices</i><br>
-                Party Mode
-              </label>
-
-              <input
-                type="radio"
-                id="remote"
-                v-model="newGameMode"
-                value="remote"
-                hidden
-              >
-              <label
-                disabled
-                for="remote"
-                class="ui-shiny ui-raised"
-                :class="{ 'ui-pressable': newGameMode != 'remote' }"
-              >
-                <div style="white-space:nowrap"><i class="material-icons">phonelink_ring</i><i
-                    class="material-icons"
-                    style="transform: rotateY(180deg)"
-                  >phonelink_ring</i></div>
-                Coming Soon
-              </label>
-            </div>
-
-            <button
-              role="submit"
-              class="ui-pressable ui-shiny ui-raised"
-            >GO!</button>
-          </form>
-          <form
-            v-else-if="activeMenu == 'join'"
-            @submit.prevent="joinGame(roomToJoin)"
-            id="joinMenu"
-          >
-            <div class="form-row">
-              <input
-                type="text"
-                ref="roomToJoin"
-                v-model="roomToJoin"
-                placeholder="Enter room code"
-                style="text-transform: uppercase; font-size: 1.4em"
-                maxlength="5"
-              >
-              <button
-                role="submit"
-                :disabled="roomToJoin.length < 5"
-                class="ui-pressable ui-shiny ui-raised"
-              >GO!</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+	<div id="home">
+		<div style="text-align: center;">
+			<img
+				id="logo"
+				src="@/assets/logos/ai1.png"
+			/>
+			<div
+				id="slideContainer"
+				:class="{ slid: showMenu }"
+			>
+				<div
+					id="main"
+					class="slide-pane"
+				>
+					<button
+						@click="startGame"
+						class="ui-raised ui-pressable ui-shiny"
+					>New Game</button>
+					<button
+						@click="openMenu('join')"
+						class="ui-raised ui-pressable ui-shiny"
+					>Join a Game</button>
+				</div>
+				<div
+					id="join"
+					class="slide-pane"
+				>
+					<div
+						id="joinModal"
+						class="ui-block"
+					>
+						<form
+							@submit.prevent="joinGame(roomToJoin)"
+							id="joinMenu"
+						>
+							<div style="display: flex; align-items: center;">
+								<div
+									id="closeMenu"
+									class="material-icons"
+									@click="closeMenu"
+								>
+									arrow_back
+								</div>
+								&nbsp;&nbsp;
+								<input
+									type="text"
+									ref="roomToJoin"
+									v-model="roomToJoin"
+									placeholder="Room code"
+									style="text-transform: uppercase; font-size: 1.1em"
+									maxlength="5"
+									size="15"
+								>
+								<button
+									role="submit"
+									:disabled="roomToJoin.length < 5"
+									class="ui-pressable ui-shiny ui-raised"
+								>GO!</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
-<style scoped>
-#slideWrapper {
-  width: calc(100vw - 2rem);
-  ;
-  overflow: hidden;
-  padding: 1rem;
+<style
+	scoped
+	lang="scss"
+>
+#home {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+#logo {
+	width: 75vw;
+	max-width: 500px;
 }
 
 #slideContainer {
-  top: 0;
-  left: 0%;
-  position: relative;
-  width: 250%;
-  height: 100%;
-  display: flex;
-  justify-content: space-between;
-  transition: 200ms ease-out;
+	position: relative;
+	width: 100%;
+	height: 30vh;
+	transition: 200ms ease-out;
+	overflow: hidden;
 }
 
-#slideContainer.slid {
-  left: -150%;
+#slideContainer .slide-pane {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: 200ms ease-out;
 }
 
-#slideContainer>div {
-  padding: 5px;
-  width: calc(100vw - 2rem);
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+#join {
+	right: -100%;
 }
 
-div#menuWrpper {
-  display: flex;
-  flex-direction: column;
-  max-width: 35rem;
+#slideContainer.slid .slide-pane {
+	translate: -100% 0;
+}
+
+div#joinModal {
+	display: flex;
+	flex-direction: column;
+	width: auto;
 }
 
 div#topBar {
-  display: flex;
-  align-items: center;
-  /* margin: 0 0 1rem; */
-}
-
-div#topBar>div {
-  width: 100%;
-  flex-grow: 1;
-  font-size: 1.2em;
-  font-weight: bold;
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
 }
 
 div#closeMenu {
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  user-select: none;
+	cursor: pointer;
+	user-select: none;
 }
 
 
 .form-row {
-  justify-content: center;
-  flex-wrap: wrap;
+	justify-content: center;
+	flex-wrap: wrap;
 }
 
 #mode.form-row label {
-  border-radius: 10px;
-  background-color: #bbb;
-  color: #fff;
-  padding: 1em;
-  margin: .5em;
-  font-size: 1em;
-  width: 7em;
+	border-radius: 10px;
+	background-color: #bbb;
+	color: #fff;
+	padding: 1em;
+	margin: .5em;
+	font-size: 1em;
+	width: 7em;
 }
 
 #mode.form-row input:checked+label {
-  background-color: #0bf;
+	background-color: #0bf;
 }
 
 #mode.form-row label i {
-  font-size: 2.5em;
-  margin: .35em 0;
+	font-size: 2.5em;
+	margin: .35em 0;
 }
 </style>

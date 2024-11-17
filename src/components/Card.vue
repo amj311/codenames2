@@ -266,6 +266,8 @@ export default {
   position: fixed;
   top: 50%;
   left: 50%;
+  width: 0;
+  height: 0;
 }
 
 #animationOverlay .track {
@@ -344,7 +346,7 @@ export default {
 
   to {
     opacity: 0;
-    transform: translate(-50%, 50%) scale(5)
+    transform: translate(-50%, 50%) scale(3)
   }
 }
 </style>
