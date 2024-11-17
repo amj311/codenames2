@@ -10,42 +10,6 @@ import { RouterView } from 'vue-router'
 </template>
 
 <style>
-.ui-view-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: 50rem;
-  display: flex;
-  align-content: center;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
-
-.ui-block {
-  padding: 1rem;
-  background: #fff;
-  width: 100%;
-  max-width: 65rem;
-  box-sizing: border-box;
-  margin: .25em;
-  border-radius: 10px;
-}
-
-.ui-block>h3:first-of-type {
-  margin: 0 0 .5em;
-}
-
-.form-row {
-  margin: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-
-
-
 div#notifsList {
   position: fixed;
   bottom: 0;
@@ -92,5 +56,4 @@ div.notifClose {
   user-select: none;
   cursor: pointer;
 }
-
 </style>

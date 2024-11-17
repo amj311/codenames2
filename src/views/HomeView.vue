@@ -176,39 +176,8 @@ div#joinModal {
 	width: auto;
 }
 
-div#topBar {
-	display: flex;
-	align-items: center;
-	gap: 0.5em;
-}
-
 div#closeMenu {
 	cursor: pointer;
 	user-select: none;
-}
-
-
-.form-row {
-	justify-content: center;
-	flex-wrap: wrap;
-}
-
-#mode.form-row label {
-	border-radius: 10px;
-	background-color: #bbb;
-	color: #fff;
-	padding: 1em;
-	margin: .5em;
-	font-size: 1em;
-	width: 7em;
-}
-
-#mode.form-row input:checked+label {
-	background-color: #0bf;
-}
-
-#mode.form-row label i {
-	font-size: 2.5em;
-	margin: .35em 0;
 }
 </style>
