@@ -1,0 +1,11 @@
+services:
+    server:
+        build:
+            context: .
+            dockerfile: ./Dockerfile.server.prod
+        image: codenames-server
+        container_name: codenames-server
+        command: yarn server
+        restart: on-failure:max=2
+        ports:
+            - 3201:5000
