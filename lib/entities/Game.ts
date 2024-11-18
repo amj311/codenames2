@@ -1,5 +1,7 @@
+import { CardSuites } from '../constants.js';
 import { RevealCardResponse } from '../server/dto/RevealCard.js'
 import GenerateCardsService from '../services/GenerateCardsService.js'
+import Card from './Card.js';
 import { GameStates } from './GameStates.js'
 import Team from './Team.js'
 
@@ -44,18 +46,11 @@ export default class Game {
   private configureTeams() {
     if (!this.teams) {
       this.teams = {
-        teamOne: new Team('teamOne', 'Blue', '#0bf', true),
-        teamTwo: new Team('teamTwo', 'Red', '#f22', true),
-        bystander: new Team('bystander', 'Bystander', '#edcb40', false),
-        assassin: new Team('assassin', 'Assassin', '#2c3e50', false),
+        teamOne: new Team('teamOne', 'Blue', '#0bf'),
+        teamTwo: new Team('teamTwo', 'Red', '#f22'),
       }
     }
-    this.teams.teamOne.qty = this.config.numTeamCards;
-    this.teams.teamTwo.qty = this.config.numTeamCards;
-    this.teams.assassin.qty = this.config.numAssassins;
-    this.teams.bystander.qty = (this.config.numCardsSqrt ** 2) - this.teams.teamOne.qty - this.teams.teamTwo.qty - this.teams.assassin.qty;
   }
-
 
   public get actions() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -78,9 +73,12 @@ export default class Game {
           return
         }
         game.configureTeams();
-        game.cards = new GenerateCardsService().generateCards(Object.values(game.teams));
+        game.cards = new GenerateCardsService().generateCards(
+          game.teams,
+          game.config,
+        );
         game.state = GameStates.turnPrep;
-        game.teamOfTurn = game.teams.teamOne;
+        game.teamOfTurn = Math.random() > 0.5 ? game.teams.teamTwo : game.teams.teamOne;
       },
 
       endGame() {
@@ -101,51 +99,67 @@ export default class Game {
       },
 
       revealCard(_, { cardId }) {
-        const card = game.getCardById(cardId)
-        if (!game.state.canRevealCard) return
-        const cardTeam = game.getCardTeam(card)!;
-        const cardBelongsToTeamOfTurn = cardTeam.id === game.teamOfTurn!.id
+        const card = game.getCardById(cardId);
+        if (!game.state.canRevealCard) return;
 
-        card.revealTeam()
-        cardTeam.pts++
-        game.numMatchesFound++
+        const cardTeam = game.getCardTeam(card);
+        const cardSuite = CardSuites[card.suiteId];
+        const cardBelongsToTeamOfTurn = cardSuite.id === game.teamOfTurn!.id;
+
+        card.revealTeam();
+        game.numMatchesFound++;
 
         console.log('\nFlipped card!')
         console.log('teamOfTurn:', game.teamOfTurn!.id)
-        console.log('cardTeam:', cardTeam.id)
-        console.log('cardTeam pts:', cardTeam.pts)
-        console.log('cardTeam qty:', cardTeam.qty)
+        console.log('cardTeam:', cardTeam?.id)
+        console.log('cardSuite:', cardSuite.id)
 
-        if (cardTeam.pts === cardTeam.qty) {
-          game.winner = cardTeam;
+        // other team wins if assassin!
+        if (cardSuite.id === 'assassin') {
+          console.log('assassin found!', cardSuite)
+          game.winner = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
           game.winningCard = card;
           game.state = GameStates.gameOver;
-        } else if (!cardBelongsToTeamOfTurn || game.numMatchesFound > game.numHintMatches) {
+        }
+
+        // bystander ends turn
+        else if (cardSuite.id === 'bystander') {
           game.actions.advanceTurn();
+        }
+
+        else if (cardTeam) {
+          const remainingCards = game.cards.filter((c) => c.suiteId === cardTeam.id && !c.revealed).length;
+          // card team wins if they have no more cards
+          if (remainingCards === 0) {
+            game.winner = cardTeam;
+            game.winningCard = card;
+            game.state = GameStates.gameOver;
+          }
+
+          // next turn
+          else if (!cardBelongsToTeamOfTurn || game.numMatchesFound > game.numHintMatches) {
+            game.actions.advanceTurn();
+          }
         }
 
         return new RevealCardResponse(card, cardBelongsToTeamOfTurn, game)
       },
 
       advanceTurn() {
-        if (!game.state.canRevealCard) return;
-        if (!game.teamOfTurn) game.teamOfTurn = game.teams.teamOne;
-        else {
-          game.teamOfTurn = game.teamOfTurn.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
-        }
+        game.teamOfTurn = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
         game.numMatchesFound = 0;
         game.state = GameStates.turnPrep;
       },
 
       resetGame() {
         for (const team of Object.values(game.teams)) {
-          team.pts = 0
+          team.pts = 0;
         }
         game.cards = [];
-        game.teamOfTurn = null
-        game.winner = null
-        game.winningCard = null
-        game.numMatchesFound = 0
+        game.teamOfTurn = null;
+        game.winner = null;
+        game.winningCard = null;
+        game.numMatchesFound = 0;
         game.state = GameStates.waitingToStart;
       }
     }
@@ -166,11 +180,11 @@ export default class Game {
   // }
 
   getCardTeam(card) {
-    const team = Array.from(Object.values(this.teams)).find((t) => t.id == card.teamId)
+    const team = Array.from(Object.values(this.teams)).find((t) => t.id == card.suiteId)
     return team
   }
 
-  getCardById(id) {
+  getCardById(id): Card {
     return this.cards.find((c) => c.id == id)
   }
 

@@ -1,22 +1,20 @@
-import Team from "./Team"
-
 export default class Card {
   id: number
   word: string
-  teamId: string
+  suiteId: string
   color: string
   revealed: boolean
 
-  constructor(id: number, word: string, team: Team) {
+  constructor(id: number, word: string, suite) {
     this.id = id
     this.word = word
-    this.teamId = team.id
-    this.color = team.color
+    this.suiteId = suite.id
+    this.color = suite.color
     this.revealed = false
   }
 
   revealTeam(): string {
-    this.revealed = true
-    return this.teamId
+    this.revealed = true;
+    return this.suiteId;
   }
 }

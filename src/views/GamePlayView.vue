@@ -15,7 +15,8 @@ export default {
     return {
       ...mapStores(useGameStore),
       preventPlay: false,
-
+      newHint: "",
+      newHintMatches: 0,
     }
   },
 
@@ -63,7 +64,7 @@ export default {
         && this.userCaptainOfTeam && this.gameState.teamOfTurn?.id === this.userCaptainOfTeam.id;
     },
     numCardsRemainingForTeamOfTurn() {
-      return this.gameState.cards.filter(c => c.teamId === this.gameState.teamOfTurn.id && !c.revealed).length;
+      return this.gameState.cards.filter(c => c.suiteId === this.gameState.teamOfTurn.id && !c.revealed).length;
     }
   },
 
@@ -123,11 +124,6 @@ export default {
       console.log("flipping Card!!!", res);
       this.preventPlay = true;
 
-      if (res.wasTeamCard) this.animateGoodFlip(res.card.id);
-      else if (res.card.teamId == this.gameState.teams.assassin.id) this.animateAssassin(res.card.id);
-      else this.animateBadFlip(res.card.id)
-
-
       if (this.gameState.winner) {
         const context = this;
         setTimeout(() => {
@@ -139,8 +135,7 @@ export default {
           //   timeout: 3000,
           // });
           alert(this.gameState.winner.name + " wins!")
-        }
-          , 1000)
+        }, 1000);
       }
 
       else if (!res.wasTeamCard) {

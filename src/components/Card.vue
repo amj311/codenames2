@@ -50,7 +50,7 @@ export default {
     animateTeamNinja() {
       const duration = 1500;
       const id = `anim_${Date.now()}`
-      this.anims.push({ id, ninja: this.appStore().teamImgs[this.card.teamId], class: `fade-grow`, duration, size: '3rem' })
+      this.anims.push({ id, ninja: this.appStore().teamImgs[this.card.suiteId], class: `fade-grow`, duration, size: '3rem' })
       const app = this;
       setTimeout(function () { app.removeAnim(id) }, duration)
     },
@@ -65,9 +65,6 @@ export default {
     showTeamImg() {
       return this.gameStore().gameState.winningCard && this.gameStore().gameState.winningCard.id === this.card.id;
     },
-    teamImg() {
-      return this.gameStore().gameState.teams[this.card.teamId].img
-    },
 
     isRevealed() {
       return this.card.revealed;
@@ -78,7 +75,7 @@ export default {
     isRevealed() {
       this.animateTeamNinja();
       // if (res.wasTeamCard) this.animateGoodFlip(res.card.id);
-      // else if (res.card.teamId == this.gameState.teams.assassin.id) this.animateAssassin(res.card.id);
+      // else if (res.card.suiteId == this.gameState.teams.assassin.id) this.animateAssassin(res.card.id);
       // else this.animateBadFlip(res.card.id)
     }
   }
@@ -112,10 +109,9 @@ export default {
       >
         <div
           v-if="showTeamImg"
-          :src="teamImg"
           style="width: 3em; aspect-ratio: 1; background-size: contain; background-position: center; background-repeat: no-repeat; "
           class="ui-raised"
-          :class="`bg-ninja-${appStore().teamImgs[card.teamId]}`"
+          :class="`bg-ninja-${appStore().teamImgs[card.suiteId]}`"
         />
       </div>
     </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { getCaptainsTeam } from '../../lib/services/GameHelpers';
-import { PlayableTeamIds } from '../../lib/constants';
+import { PlayableTeamIds, CardSuites } from '../../lib/constants';
 import { useGameStore } from '@/stores/game.store';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app.store';
@@ -137,21 +137,27 @@ export default {
       return this.tmpConfig.numCardsSqrt ** 2 - this.tmpConfig.numAssassins - this.tmpConfig.numTeamCards * this.tmpConfig.numTeams;
     },
 
-    teamQty() {
-      return {
-        teamOne: this.tmpConfig.numTeamCards,
-        teamTwo: this.tmpConfig.numTeamCards,
-        assassin: this.tmpConfig.numAssassins,
-        bystander: this.numBystanders,
-      }
-    },
-
     previewCards() {
       const cards = [] as any[];
+
+      const suitesToFill = [
+        ...Array.from(Object.values(this.gameState.teams)).map(team => ({
+          ...CardSuites[team.id],
+          qty: this.tmpConfig.numTeamCards,
+        })),
+        {
+          ...CardSuites.bystander,
+          qty: this.numBystanders,
+        },
+        {
+          ...CardSuites.assassin,
+          qty: this.tmpConfig.numAssassins,
+        },
+      ];
       let i = 0;
-      for (const team of Object.values(this.gameState.teams) as any[]) {
-        for (let j = 0; j < this.teamQty[team.id]; j++) {
-          cards.push({ color: team.color, idx: i } as any)
+      for (const suite of suitesToFill) {
+        for (let j = 0; j < suite.qty; j++) {
+          cards.push({ color: suite.color, idx: i } as any)
           i++;
         }
       }
@@ -162,7 +168,7 @@ export default {
 
     codeMasters() {
       const masters = Array.from(Object.values(this.gameState.teams)).reduce((teamsData, team) => {
-        if (team.isCompetitor && team.captainId) {
+        if (team.captainId) {
           teamsData.push({ teamId: team.id, captain: team.captainId } as any);
         }
         return teamsData;

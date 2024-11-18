@@ -85,6 +85,10 @@ async function resetGame() {
   await gameStore.doGameAction('resetGame');
 }
 
+async function playAgain() {
+  await gameStore.doGameAction('resetGame');
+}
+
 
 const showUsernameModal = ref(false);
 const tmpUsername = ref('');
@@ -164,7 +168,7 @@ async function saveUsername() {
           </div>
           <div
             v-else-if="gameStore.gameState.state.isGameOver"
-            @click="resetGame"
+            @click="playAgain"
             class="button inline"
             style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
           >

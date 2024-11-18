@@ -1,3 +1,4 @@
+import { CardSuites } from '../constants.js';
 import Card from '../entities/Card.js'
 import WordListService from './WordListService.js'
 
@@ -10,44 +11,64 @@ export default class GenerateCardsService {
    * @param teams an array of teams
    * @returns An array of cards
    */
-  generateCards(teams, wordList = null) {
+  generateCards(teams, config, wordList = null) {
     let openCardIdxs = [] as number[];
     const usedWordIdxs = [] as number[];
     const cards = [] as Card[];
+    const teamsArray = Array.from(Object.values(teams));
 
-    const numCards = teams.reduce((total, team) => total + team.qty, 0)
+    const numBystanders = (config.numCardsSqrt ** 2) - (teamsArray.length * config.numTeamCards) - config.numAssassins;
+
+    const suitesToFill = [
+      ...teamsArray.map(team => ({
+        ...CardSuites[team.id],
+        qty: config.numTeamCards,
+      })),
+      {
+        ...CardSuites.bystander,
+        qty: numBystanders,
+      },
+      {
+        ...CardSuites.assassin,
+        qty: config.numAssassins,
+      },
+    ];
+
+    const numCards = suitesToFill.reduce((total, suite) => total + suite.qty, 0)
+
+    console.log({ numCards, suitesToFill })
     const wordSet = wordList || this.getWordListService().getWordList()
     if (wordSet.length < numCards) throw new Error('Not enough words for cards!')
 
     for (let i = 0; i < numCards; i++) openCardIdxs.push(i)
 
     do {
-      const randIdx = openCardIdxs[Math.floor(Math.random() * openCardIdxs.length)]
-      if (openCardIdxs.lastIndexOf(randIdx) < 0) continue
-      openCardIdxs = openCardIdxs.filter((idx) => idx != randIdx)
+      const randIdx = openCardIdxs[Math.floor(Math.random() * openCardIdxs.length)];
+      if (openCardIdxs.lastIndexOf(randIdx) < 0) continue;
+      openCardIdxs = openCardIdxs.filter((idx) => idx != randIdx);
 
-      let wordIdx
+      let wordIdx;
       do {
-        wordIdx = Math.floor(Math.random() * wordSet.length)
-      } while (usedWordIdxs.lastIndexOf(wordIdx) != -1)
-      usedWordIdxs.push(wordIdx)
+        wordIdx = Math.floor(Math.random() * wordSet.length);
+      } while (usedWordIdxs.lastIndexOf(wordIdx) != -1);
+      usedWordIdxs.push(wordIdx);
 
       // this process determines which team the randIdx belongs to.
       // teamCap serves as a delimiter for a team's range of cards
-      let team
-      let teamCap = 0
-      let teamIdx = 0
+      let suite;
+      let suiteCap = 0;
+      let suiteIdx = 0;
       do {
-        team = teams[teamIdx]
-        teamCap = Number(teamCap) + Number(team.qty)
-        teamIdx++
-      } while (teamCap <= randIdx)
+        suite = suitesToFill[suiteIdx];
+        suiteCap = Number(suiteCap) + Number(suite.qty);
+        suiteIdx++;
+      } while (suiteCap <= randIdx);
 
-      const card = new Card(randIdx, wordSet[wordIdx], team)
-      cards.push(card)
-    } while (openCardIdxs.length > 0)
+      const card = new Card(randIdx, wordSet[wordIdx], suite);
+      cards.push(card);
+    } while (openCardIdxs.length > 0);
 
-    return cards
+    return cards;
   }
 
   getWordListService() {
