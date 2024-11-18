@@ -39,9 +39,7 @@ const currentView = computed(() => {
 })
 
 async function attemptRejoinRoom() {
-  console.log('Attempting to rejoin room...');
   const cache = gameStore.getCache();
-  console.log(cache);
   if (!cache || !cache.gameRoomId || !cache.user) return;
 
   try {
