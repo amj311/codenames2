@@ -1,6 +1,6 @@
 <script lang="ts">
 import { getCaptainsTeam } from '../../lib/services/GameHelpers';
-import { PlayableTeamIds, CardSuites } from '../../lib/constants';
+import { CardSuites } from '../../lib/constants';
 import { useGameStore } from '@/stores/game.store';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app.store';
@@ -12,6 +12,7 @@ export default {
       showCaptainTeamSelection: false,
       externalUpdate: false,
       tmpConfig: {
+        mode: 'classic',
         numCardsSqrt: 5,
         numTeams: 2,
         numAssassins: 1,
@@ -125,7 +126,7 @@ export default {
     },
 
     teamCaptainOptions() {
-      return PlayableTeamIds;
+      return Object.keys(this.gameState.teams);
     },
 
     maxCompTeamQty() {
@@ -188,8 +189,9 @@ export default {
     },
 
     canStartGame() {
+      const hasMasters = !Array.from(Object.values(this.gameState.teams)).some(team => !team.captainId);
       return (
-        this.codeMasters.length >= 2 &&
+        hasMasters &&
         (this.user.isHost || this.userCaptainOfTeam)
       )
     },
@@ -300,7 +302,16 @@ export default {
         id="boardSettings"
         class="ui-block"
       >
-        <h3>Game Settings</h3>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <h3>Game Settings</h3>
+          <select
+            style="text-transform: capitalize;"
+            v-model="tmpConfig.mode"
+          >
+            <option>classic</option>
+            <option>high score</option>
+          </select>
+        </div>
         <div id="boardPreview">
           <div
             v-for="card in previewCards"

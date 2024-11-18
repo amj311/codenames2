@@ -1,7 +1,7 @@
 <script>
 // import Notification from "../utils/Notification"
 import { getCaptainsTeam } from "../../lib/services/GameHelpers"
-import { PlayableTeamIds } from "../../lib/constants"
+import { PlayableTeamIds, CardSuites } from "../../lib/constants"
 import Card from '../components/Card.vue'
 import { mapStores } from "pinia";
 import { useGameStore } from "@/stores/game.store";
@@ -17,6 +17,7 @@ export default {
       preventPlay: false,
       newHint: "",
       newHintMatches: 0,
+      CardSuites,
     }
   },
 
@@ -48,9 +49,9 @@ export default {
       return PlayableTeamIds;
     },
 
-    needNewCaptains() {
-      return !this.gameState.teams.teamOne.captainId || !this.gameState.teams.teamTwo.captainId;
-    },
+    // needNewCaptains() {
+    //   return !this.gameState.teams.teamOne.captainId || !this.gameState.teams.teamTwo.captainId;
+    // },
 
     cardWidth() { return Math.floor(100 / this.gameState.config.numCardsSqrt) },
 
@@ -205,7 +206,7 @@ export default {
 
     <div
       id="playArea"
-      :class="{ prevented: preventPlay || needNewCaptains }"
+      :class="{ prevented: preventPlay }"
     >
       <div id="roundSummary">
         <div
@@ -264,9 +265,19 @@ export default {
           v-else-if="gameState.state.isGameOver"
         >
           <div
+            v-if="gameState.config.mode === 'classic'"
             class="ui-raised ui-shiny"
             :style="`text-align: center; margin: 0 auto; background-color: ${gameState.winner ? gameState.winner.color : gameState.teams.bystander.color}; color: #fff; padding: .5em 1em; border-radius: 5px; font-size:1.2em`"
-          >{{ gameState.winner ? gameState.winner.name + " Wins!" : "DRAW!" }}</div>
+          >
+            {{ gameState.winner ? gameState.winner.name + " Wins!" : "DRAW!" }}
+          </div>
+          <div
+            v-else-if="gameState.config.mode === 'high score'"
+            class="ui-raised ui-shiny"
+            :style="`text-align: center; margin: 0 auto; background-color: ${gameState.winner ? gameState.winner.color : CardSuites.assassin.color}; color: #fff; padding: .5em 1em; border-radius: 5px; font-size:1.2em`"
+          >
+            {{ gameState.winner ? gameState.winner.name + " Wins!" : "GAME OVER" }}
+          </div>
         </div>
       </div>
 

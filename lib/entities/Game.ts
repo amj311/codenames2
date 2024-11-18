@@ -6,6 +6,7 @@ import { GameStates } from './GameStates.js'
 import Team from './Team.js'
 
 const defaultConfig = {
+  mode: 'classic',
   numCardsSqrt: 5,
   numTeams: 2,
   numTeamCards: 9,
@@ -47,8 +48,15 @@ export default class Game {
     if (!this.teams) {
       this.teams = {
         teamOne: new Team('teamOne', 'Blue', '#0bf'),
-        teamTwo: new Team('teamTwo', 'Red', '#f22'),
       }
+    }
+    if (this.config.mode === 'high score') {
+      delete this.teams.teamTwo;
+      this.config.numTeams = 1;
+    }
+    else if (!this.teams.teamTwo) {
+      this.teams.teamTwo = new Team('teamTwo', 'Red', '#f22');
+      this.config.numTeams = 2;
     }
   }
 
@@ -78,7 +86,12 @@ export default class Game {
           game.config,
         );
         game.state = GameStates.turnPrep;
-        game.teamOfTurn = Math.random() > 0.5 ? game.teams.teamTwo : game.teams.teamOne;
+        if (game.config.mode === 'high score') {
+          game.teamOfTurn = game.teams.teamOne;
+        }
+        else {
+          game.teamOfTurn = Math.random() > 0.5 ? game.teams.teamTwo : game.teams.teamOne;
+        }
       },
 
       endGame() {
@@ -117,7 +130,9 @@ export default class Game {
         // other team wins if assassin!
         if (cardSuite.id === 'assassin') {
           console.log('assassin found!', cardSuite)
-          game.winner = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
+          if (game.config.mode === 'classic') {
+            game.winner = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
+          }
           game.winningCard = card;
           game.state = GameStates.gameOver;
         }
@@ -146,15 +161,14 @@ export default class Game {
       },
 
       advanceTurn() {
-        game.teamOfTurn = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
+        if (game.config.mode === 'classic') {
+          game.teamOfTurn = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
+        }
         game.numMatchesFound = 0;
         game.state = GameStates.turnPrep;
       },
 
       resetGame() {
-        for (const team of Object.values(game.teams)) {
-          team.pts = 0;
-        }
         game.cards = [];
         game.teamOfTurn = null;
         game.winner = null;

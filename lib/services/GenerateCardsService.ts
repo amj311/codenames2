@@ -36,7 +36,6 @@ export default class GenerateCardsService {
 
     const numCards = suitesToFill.reduce((total, suite) => total + suite.qty, 0)
 
-    console.log({ numCards, suitesToFill })
     const wordSet = wordList || this.getWordListService().getWordList()
     if (wordSet.length < numCards) throw new Error('Not enough words for cards!')
 
