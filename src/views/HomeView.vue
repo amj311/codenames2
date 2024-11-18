@@ -26,9 +26,9 @@ export default {
     openMenu(menu) {
       this.showMenu = true;
       this.activeMenu = menu;
+      setTimeout(() => this.$refs.roomToJoin.focus(), 100);
     },
     closeMenu() {
-      console.log("closing menu");
       this.showMenu = false;
     },
     async startGame() {
