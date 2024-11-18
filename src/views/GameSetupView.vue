@@ -195,6 +195,10 @@ export default {
         (this.user.isHost || this.userCaptainOfTeam)
       )
     },
+
+    shortJoinUrl() {
+      return this.joinUrl.substring(this.joinUrl.indexOf('://') + 3);
+    }
   }
 }
 </script>
@@ -290,11 +294,12 @@ export default {
               id="joinQR"
             />
           </div>
-          <a
-            :href="joinUrl"
-            target="_blank"
-          >{{ joinUrl }}</a>
-
+          <div style="margin-top: .5em;">
+            <a
+              :href="joinUrl"
+              target="_blank"
+            >{{ shortJoinUrl }}</a>
+          </div>
         </div>
       </div>
 
@@ -302,8 +307,8 @@ export default {
         id="boardSettings"
         class="ui-block"
       >
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <h3>Game Settings</h3>
+        <h3 style="display: flex; align-items: center; justify-content: space-between;">
+          <div>Game Settings</div>
           <select
             style="text-transform: capitalize;"
             v-model="tmpConfig.mode"
@@ -311,7 +316,7 @@ export default {
             <option>classic</option>
             <option>high score</option>
           </select>
-        </div>
+        </h3>
         <div id="boardPreview">
           <div
             v-for="card in previewCards"
@@ -395,7 +400,7 @@ export default {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 6rem);
+  min-height: calc(100vh - 7rem);
 }
 
 #settings {

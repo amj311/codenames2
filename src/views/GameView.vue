@@ -81,7 +81,7 @@ const userCanResetGame = computed(() => {
 })
 
 async function resetGame() {
-  if (!confirm("Are you sure you want to end this game?")) return;
+  if (!confirm("Are you sure you want to reset this game?")) return;
   await gameStore.doGameAction('resetGame');
 }
 
@@ -119,7 +119,7 @@ async function saveUsername() {
       <RouterLink to="/"><img
           id="logo"
           src="@/assets/logos/text.png"
-          style="width: 8rem"
+          style="width: 7rem"
         /></RouterLink>
       <template v-if="gameStore.gameState">
         <div style="display: flex; flex-grow: 1; gap: 0rem">
@@ -127,6 +127,14 @@ async function saveUsername() {
             <i class="material-icons">tap_and_play</i>
             &nbsp;
             <span class="code-cap">{{ gameStore.gameRoomId }}</span>
+          </div>
+          <div
+            v-if="userCanResetGame"
+            @click="resetGame"
+            class="button text"
+            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
+          >
+            <i class="material-icons">replay</i>
           </div>
           <div style="flex-grow: 1"></div>
           <div
@@ -144,11 +152,11 @@ async function saveUsername() {
             </span>
           </div>
           <div
-            v-if="gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
+            v-if="gameStore.gameState.config.mode === 'classic' && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
             style="display: flex; align-items: center; font-weight: bold;"
             :style="{ color: gameStore.gameState.teamOfTurn.color }"
           >
-            Team {{ gameStore.gameState.teamOfTurn.name }}'s Turn
+            {{ gameStore.gameState.teamOfTurn.name }}'s Turn
           </div>
           <div
             v-if="!gameStore.gameState.state.isInPlay"
@@ -157,14 +165,6 @@ async function saveUsername() {
             style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
           >
             <i class="material-icons">logout</i>
-          </div>
-          <div
-            v-else-if="userCanResetGame"
-            @click="resetGame"
-            class="button text"
-            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-          >
-            <i class="material-icons">cancel</i>
           </div>
           <div
             v-else-if="gameStore.gameState.state.isGameOver"
