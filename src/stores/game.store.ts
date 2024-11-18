@@ -21,6 +21,7 @@ export const useGameStore = defineStore('game', {
   }),
   actions: {
     loadGameRoom(id: string) {
+      clearTimeout(this.pingTimeout);
       this.gameRoomId = id;
       this.initPings();
     },
@@ -133,6 +134,13 @@ export const useGameStore = defineStore('game', {
         console.error(err);
       }
     },
+    async rejoinRoom(rid, user) {
+      const { data } = await api.post('/room/' + rid + '/rejoin', {
+        user,
+      });
+      this.setUser(data.user);
+      this.loadGameRoom(data.room.id);
+    }
   },
   getters: {
     isHost(state) {

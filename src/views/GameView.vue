@@ -44,22 +44,11 @@ async function attemptRejoinRoom() {
 
   try {
     cachedRoomId.value = cache.gameRoomId;
-    const { data } = await api.post('/room/' + cache.gameRoomId + '/rejoin', {
-      user: cache.user,
-    });
-    if (!data.success) {
-
-    }
-    else {
-      roomIsClosed.value = false;
-      gameStore.setUser(data.user);
-      gameStore.loadGameRoom(data.room.id);
-    }
+    await gameStore.rejoinRoom(cache.gameRoomId, cache.user);
+    roomIsClosed.value = false;
   }
-  catch (err: any) {
-    if (err.response?.status) {
-      roomIsClosed.value = true;
-    }
+  catch (err) {
+    roomIsClosed.value = true;
   }
 }
 

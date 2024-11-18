@@ -12,14 +12,16 @@ export default {
       activeMenu: 'new',
       newGameMode: 'party',
       roomToJoin: '',
+      cache: null,
     })
-  },
-
-  mounted() {
   },
 
   computed: {
     ...mapStores(useGameStore),
+  },
+
+  mounted() {
+    this.cache = this.gameStore.getCache();
   },
 
   methods: {
@@ -65,14 +67,28 @@ export default {
           id="main"
           class="slide-pane"
         >
-          <button
-            @click="startGame"
-            class="ui-raised ui-pressable ui-shiny"
-          >New Game</button>
-          <button
-            @click="openMenu('join')"
-            class="ui-raised ui-pressable ui-shiny"
-          >Join a Game</button>
+          <div>
+            <div>
+              <button
+                @click="startGame"
+                class="ui-raised ui-pressable ui-shiny"
+              >New Game</button>
+              <button
+                @click="openMenu('join')"
+                class="ui-raised ui-pressable ui-shiny"
+              >Join a Game</button>
+            </div>
+            <button
+              v-if="cache?.gameRoomId"
+              @click="() => $router.push('/play')"
+              class="button text"
+            >
+              <i class="material-icons">login</i>
+              &nbsp;
+              Return to {{ cache?.gameRoomId.toUpperCase() }}
+            </button>
+          </div>
+
         </div>
         <div
           id="join"
