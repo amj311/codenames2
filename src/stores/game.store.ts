@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { PING_INTERVAL } from '../../lib/constants';
+import { getCaptainsTeam } from '../../lib/services/GameHelpers';
 import api from '@/services/api';
 
 // const savedState = localStorage.hasItem('savedState') ? JSON.parse(localStorage.getItem('savedState')!) : null
@@ -127,6 +128,9 @@ export const useGameStore = defineStore('game', {
   getters: {
     isHost(state) {
       return state.user && state.user.isHost;
+    },
+    userCaptainOfTeam(state) {
+      return getCaptainsTeam(state.user, state.gameState.teams);
     },
   }
 })

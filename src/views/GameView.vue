@@ -66,12 +66,21 @@ async function attemptRejoinRoom() {
 }
 
 
-async function leaveRoom(skipConfirm = false) {
-  if (!skipConfirm && !confirm("Are you sure you want to leave?")) return;
+async function promptLeaveRoom() {
+  if (!confirm("Are you sure you want to leave?")) return;
+  await leaveRoom();
+}
+
+async function leaveRoom() {
   await gameStore.doRoomAction('leaveRoom');
   gameStore.clear();
   router.push('/');
 }
+
+const userCanResetGame = computed(() => {
+  return (gameStore.user?.isHost || gameStore.userCaptainOfTeam)
+    && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver;
+})
 
 async function resetGame() {
   if (!confirm("Are you sure you want to end this game?")) return;
@@ -141,14 +150,14 @@ async function saveUsername() {
           </div>
           <div
             v-if="!gameStore.gameState.state.isInPlay"
-            @click="leaveRoom"
+            @click="promptLeaveRoom"
             class="button text"
             style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
           >
             <i class="material-icons">logout</i>
           </div>
           <div
-            v-else-if="!gameStore.gameState.state.isGameOver"
+            v-else-if="userCanResetGame"
             @click="resetGame"
             class="button text"
             style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
@@ -183,7 +192,7 @@ async function saveUsername() {
             </h3>
             <button
               class="ui-pressable ui-shiny ui-raised"
-              @click="() => leaveRoom(true)"
+              @click="leaveRoom"
             >Leave</button>
           </div>
         </div>
