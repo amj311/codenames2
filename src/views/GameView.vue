@@ -241,7 +241,6 @@ async function saveUsername() {
   padding: 1rem;
 }
 
-
 #roomInfo {
   display: flex;
   flex-wrap: wrap;
@@ -264,7 +263,6 @@ async function saveUsername() {
 .code-cap {
   text-transform: uppercase;
 }
-
 
 .username-modal {
   position: fixed;

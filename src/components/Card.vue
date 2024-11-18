@@ -216,7 +216,7 @@ export default {
   display: inline-block;
   width: 100%;
   word-wrap: break-word;
-  font-size: .9em;
+  font-size: max(.9em, min(1.7vw, 2em));
   text-align: center;
 }
 

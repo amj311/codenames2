@@ -1,7 +1,7 @@
 @import './base.css';
 
 :root {
-    font-size: 2vh;
+    font-size: 14px;
 }
 
 body {
@@ -289,18 +289,8 @@ img.ui-raised {
     }
 }
 
-@media screen and (max-aspect-ratio: 1/1) {
+/* @media screen and (max-aspect-ratio: 1/1) {
     :root {
         font-size: 2vw;
     }
-}
-
-@media screen and (max-width: 600px) {
-    :root {
-        font-size: 15px;
-    }
-
-    #app {
-        display: block;
-    }
-}
+} */
