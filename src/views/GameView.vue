@@ -117,14 +117,6 @@ async function saveUsername() {
             &nbsp;
             <span class="code-cap">{{ gameStore.gameRoomId }}</span>
           </div>
-          <div
-            v-if="userCanResetGame"
-            @click="resetGame"
-            class="button text"
-            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-          >
-            <i class="material-icons">replay</i>
-          </div>
           <div style="flex-grow: 1"></div>
           <div
             v-if="!gameStore.gameState.state.isInPlay"
@@ -162,6 +154,14 @@ async function saveUsername() {
             style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
           >
             PLAY AGAIN
+          </div>
+          <div
+            v-else-if="userCanResetGame"
+            @click="resetGame"
+            class="button text"
+            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
+          >
+            <i class="material-icons">replay</i>
           </div>
         </div>
       </template>
