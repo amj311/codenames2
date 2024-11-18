@@ -461,6 +461,12 @@ export default {
         ></textarea>
       </div>
 
+      <small>
+        <p>Custom word decks are saved to your browser. If you plan on switching devices, you will need to save them
+          somewhere else.</p>
+        <br />
+      </small>
+
       <div style="display: flex; align-items: center;">
         <button
           @click="() => deleteCustomDeck(tmpCustomDeck.name)"
