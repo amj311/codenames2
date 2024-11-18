@@ -13,11 +13,18 @@ export default {
       externalUpdate: false,
       tmpConfig: {
         mode: 'classic',
+        wordDeck: 'Easy',
         numCardsSqrt: 5,
         numTeams: 2,
         numAssassins: 1,
         numTeamCards: 9,
         numBystanders: null,
+      },
+      customDecks: {},
+      showCustomDeckModal: false,
+      tmpCustomDeck: {
+        name: '',
+        wordsTxt: ''
       },
       hostUrl: new URL(window.location.href),
       joinUrl: '',
@@ -26,6 +33,7 @@ export default {
   },
 
   async mounted() {
+    this.customDecks = JSON.parse(localStorage.getItem('customWordDecks') || '{}');
     this.joinUrl = this.hostUrl.origin + "/" + this.gameStore().gameRoomId!.toUpperCase();
     this.joinUrlQr = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(this.joinUrl);
   },
@@ -43,13 +51,21 @@ export default {
       if (this.externalUpdate) return;
       this.pushTmpConfig();
     },
+
+    customDecksTrigger() {
+      localStorage.setItem('customWordDecks', JSON.stringify(this.customDecks));
+      this.pushTmpConfig();
+    }
   },
 
 
   methods: {
     async pushTmpConfig() {
       try {
-        await this.gameStore().doGameAction('configure', this.tmpConfig);
+        await this.gameStore().doGameAction('configure', {
+          config: this.tmpConfig,
+          customWords: this.selectedCustomWords,
+        });
       }
       catch (err) {
         console.error(err);
@@ -91,7 +107,25 @@ export default {
       if (currentTeamCards > availableCards) {
         this.tmpConfig.numTeamCards = Math.floor(availableCards / this.tmpConfig.numTeams);
       }
-    }
+    },
+
+    openCustomDeckModal(deckData?) {
+      this.tmpCustomDeck.name = deckData?.name || '';
+      this.tmpCustomDeck.wordsTxt = deckData?.wordsTxt || '';
+      this.showCustomDeckModal = true;
+    },
+
+    saveCustomDeck() {
+      if (!this.tmpCustomDeck.name) return;
+      if (!this.tmpCustomDeck.wordsTxt) return;
+      this.customDecks[this.tmpCustomDeck.name] = this.tmpCustomDeck;
+      this.showCustomDeckModal = false;
+    },
+
+    deleteCustomDeck(name) {
+      delete this.customDecks[name];
+      this.showCustomDeckModal = false;
+    },
   },
 
   computed: {
@@ -163,17 +197,6 @@ export default {
       return masters;
     },
 
-    userTeamSelection: {
-      get() { return this.userCaptainOfTeam?.id },
-      set(value) {
-        console.log("setting team captain")
-        this.$store.dispatch('invokeGameMethod', {
-          method: "setTeamCaptain",
-          args: [true, value, this.user]
-        })
-      }
-    },
-
     canStartGame() {
       const hasMasters = !Array.from(Object.values(this.gameState.teams)).some(team => !team.captainId);
       return (
@@ -187,7 +210,22 @@ export default {
     },
 
     wordDecks() {
-      return DefaultWordDecks;
+      const customDecks = this.customDecks;
+      return [
+        ...DefaultWordDecks,
+        ...Object.values(customDecks).map(d => ({
+          ...(d as object),
+          isCustom: true,
+        })),
+      ];
+    },
+
+    selectedCustomWords() {
+      return this.wordDecks.find(deck => deck.name == this.tmpConfig.wordDeck)?.wordsTxt;
+    },
+
+    customDecksTrigger() {
+      return JSON.stringify(this.customDecks);
     }
   }
 }
@@ -361,6 +399,7 @@ export default {
           </div>
           <div class="form-row">
             <label>Word Deck</label>
+            <div style="flex-grow: 1" />
             <select v-model="tmpConfig.wordDeck">
               <option
                 v-for="wordsDeck in wordDecks"
@@ -368,6 +407,17 @@ export default {
                 :value="wordsDeck.name"
               >{{ wordsDeck.name }}</option>
             </select>
+            <i
+              class="material-icons"
+              @click="() => openCustomDeckModal(customDecks[tmpConfig.wordDeck])"
+              style="padding-left: 4px; cursor: pointer;"
+              v-if="selectedCustomWords"
+            >edit</i>
+            <i
+              class="material-icons"
+              @click="openCustomDeckModal({ name: '', wordsTxt: '' })"
+              style="padding-left: 4px; cursor: pointer;"
+            >add</i>
           </div>
         </form>
       </div>
@@ -387,6 +437,48 @@ export default {
           style="text-align:right; font-size:.8em; font-weight:bold"
         >Waiting to begin...</div>
       </div>
+    </div>
+
+
+    <div
+      id="customDeckModal"
+      class="ui-block"
+      v-if="showCustomDeckModal"
+    >
+      <h3>Custom Deck</h3>
+      <div>
+        <input
+          type="text"
+          v-model="tmpCustomDeck.name"
+          placeholder="Name"
+        />
+        <br />
+        <br />
+        <textarea
+          v-model="tmpCustomDeck.wordsTxt"
+          placeholder="A comma-separated list of words..."
+          style="width:100%; height: min(20em, 100vh - 15em)"
+        ></textarea>
+      </div>
+
+      <div style="display: flex; align-items: center;">
+        <button
+          @click="() => deleteCustomDeck(tmpCustomDeck.name)"
+          class="button text"
+        >
+          <i class="material-icons">delete</i>
+        </button>
+        <div style="flex-grow: 1;"></div>
+        <button
+          @click="showCustomDeckModal = false"
+          class="button text"
+        >Cancel</button>
+        <button
+          @click="saveCustomDeck"
+          class="ui-pressable ui-shiny ui-raised"
+        >Save</button>
+      </div>
+
     </div>
   </div>
 </template>
@@ -556,5 +648,16 @@ div#teamLists {
   #settings>div.ui-block {
     width: 100%;
   }
+}
+
+
+
+div#customDeckModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 95%;
+  max-width: 45rem;
 }
 </style>

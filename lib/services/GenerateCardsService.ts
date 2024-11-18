@@ -38,7 +38,9 @@ export default class GenerateCardsService {
 
     const wordSet = this.getWordListService().getWordList(config.wordDeck, customWords);
     console.log(wordSet);
-    if (wordSet.length < numCards) throw new Error('Not enough words for cards!')
+    if (wordSet.length < numCards) {
+      return [];
+    }
 
     for (let i = 0; i < numCards; i++) openCardIdxs.push(i)
 

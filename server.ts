@@ -93,7 +93,7 @@ app.post('/api/room/:id/join', async (req, res) => {
       success: true,
       user: newPlayer,
       room: roomMatch.getRoomSummary(),
-      game: roomMatch.game,
+      game: roomMatch.game.getSummary(),
     });
   }
   console.log('Could not find room');
@@ -111,7 +111,7 @@ app.post('/api/room/:id/rejoin', async (req, res) => {
       success: true,
       user: joinedUser,
       room: roomMatch.getRoomSummary(),
-      game: roomMatch.game,
+      game: roomMatch.game.getSummary(),
     });
   }
   return res.status(404).json({ success: false });
@@ -128,7 +128,7 @@ app.post('/api/room/:id/room-action/:action', async (req, res) => {
       actionRes,
       user: roomMatch.users.get(userId),
       room: roomMatch.getRoomSummary(),
-      game: roomMatch.game,
+      game: roomMatch.game.getSummary(),
     });
   }
   return res.status(404).json({ success: false });
@@ -145,7 +145,7 @@ app.post('/api/room/:id/game-action/:action', async (req, res) => {
       actionRes,
       user: roomMatch.users.get(userId),
       room: roomMatch.getRoomSummary(),
-      game: roomMatch.game,
+      game: roomMatch.game.getSummary(),
     });
   }
   return res.status(404).json({ success: false });

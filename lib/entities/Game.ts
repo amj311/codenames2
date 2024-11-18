@@ -27,8 +27,25 @@ export default class Game {
   public hintOfTurn = '';
   public numHintMatches: 0;
 
+  private usingCustomWords = '';
+
   constructor(config = null) {
     this.configure(config);
+  }
+
+  public getSummary() {
+    return {
+      config: this.config,
+      state: this.state,
+      teams: this.teams,
+      cards: this.cards,
+      teamOfTurn: this.teamOfTurn,
+      winner: this.winner,
+      winningCard: this.winningCard,
+      numMatchesFound: this.numMatchesFound,
+      hintOfTurn: this.hintOfTurn,
+      numHintMatches: this.numHintMatches,
+    }
   }
 
   private configure(config) {
@@ -65,8 +82,9 @@ export default class Game {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const game = this;
     return {
-      configure(userId, config) {
+      configure(userId, { config, customWords }) {
         game.configure(config);
+        game.usingCustomWords = customWords;
       },
 
       makeUserCaptain(_, { teamCode, userId }) {
@@ -85,6 +103,7 @@ export default class Game {
         game.cards = new GenerateCardsService().generateCards(
           game.teams,
           game.config,
+          game.usingCustomWords
         );
         game.state = GameStates.turnPrep;
         if (game.config.mode === 'high score') {
