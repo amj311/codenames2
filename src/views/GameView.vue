@@ -8,7 +8,7 @@ import GameSetupView from './GameSetupView.vue';
 import GamePlayView from './GamePlayView.vue';
 import { computed, ref } from 'vue';
 import api from '@/services/api';
-import { useRouter } from 'vue-router';
+import { useRouter, RouterLink } from 'vue-router';
 
 const router = useRouter();
 
@@ -116,11 +116,11 @@ async function saveUsername() {
 <template>
   <div class="game-wrapper">
     <div id="roomInfo">
-      <img
-        id="logo"
-        src="@/assets/logos/text.png"
-        style="width: 8rem"
-      />
+      <RouterLink to="/"><img
+          id="logo"
+          src="@/assets/logos/text.png"
+          style="width: 8rem"
+        /></RouterLink>
       <template v-if="gameStore.gameState">
         <div style="display: flex; flex-grow: 1; gap: 0rem">
           <div id="roomCode">
