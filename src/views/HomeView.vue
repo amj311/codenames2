@@ -78,15 +78,17 @@ export default {
                 class="ui-raised ui-pressable ui-shiny"
               >Join a Game</button>
             </div>
-            <button
-              v-if="cache?.gameRoomId"
-              @click="() => $router.push('/play')"
-              class="button text"
-            >
-              <i class="material-icons">login</i>
-              &nbsp;
-              Return to {{ cache?.gameRoomId.toUpperCase() }}
-            </button>
+            <div v-if="cache?.gameRoomId">
+              <br />
+              <button
+                @click="() => $router.push('/play')"
+                class="button text"
+              >
+                <i class="material-icons">login</i>
+                &nbsp;
+                Return to {{ cache?.gameRoomId.toUpperCase() }}
+              </button>
+            </div>
           </div>
 
         </div>

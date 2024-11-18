@@ -84,6 +84,7 @@ textarea {
     padding: 0.25em;
     max-width: 100%;
     flex-grow: 1;
+    font-family: inherit;
 }
 
 input[type='number'] {
