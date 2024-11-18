@@ -11,7 +11,7 @@ export default class GenerateCardsService {
    * @param teams an array of teams
    * @returns An array of cards
    */
-  generateCards(teams, config, wordList = null) {
+  generateCards(teams, config, customWords?) {
     let openCardIdxs = [] as number[];
     const usedWordIdxs = [] as number[];
     const cards = [] as Card[];
@@ -36,7 +36,8 @@ export default class GenerateCardsService {
 
     const numCards = suitesToFill.reduce((total, suite) => total + suite.qty, 0)
 
-    const wordSet = wordList || this.getWordListService().getWordList()
+    const wordSet = this.getWordListService().getWordList(config.wordDeck, customWords);
+    console.log(wordSet);
     if (wordSet.length < numCards) throw new Error('Not enough words for cards!')
 
     for (let i = 0; i < numCards; i++) openCardIdxs.push(i)

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { getCaptainsTeam } from '../../lib/services/GameHelpers';
-import { CardSuites } from '../../lib/constants';
+import { CardSuites, DefaultWordDecks } from '../../lib/constants';
 import { useGameStore } from '@/stores/game.store';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app.store';
@@ -83,20 +83,6 @@ export default {
       if (this.canStartGame) {
         this.gameStore().doGameAction('startGame');
       }
-    },
-
-    async leaveRoom() {
-      if (!confirm("Are you sure you want to leave?")) return;
-      await this.gameStore().doRoomAction('leaveRoom');
-      this.gameStore().clear();
-      this.$router.push('/');
-    },
-
-    async closeRoom() {
-      // await this.gameStore().doGameAction('closeRoom');
-      // this.gameStore().clear();
-      // this.$router.push('/');
-      this.leaveRoom();
     },
 
     updateTeamCardsByAvailableSpace() {
@@ -198,6 +184,10 @@ export default {
 
     shortJoinUrl() {
       return this.joinUrl.substring(this.joinUrl.indexOf('://') + 3);
+    },
+
+    wordDecks() {
+      return DefaultWordDecks;
     }
   }
 }
@@ -369,6 +359,16 @@ export default {
               >
             </div>
           </div>
+          <div class="form-row">
+            <label>Word Deck</label>
+            <select v-model="tmpConfig.wordDeck">
+              <option
+                v-for="wordsDeck in wordDecks"
+                :key="wordsDeck.name"
+                :value="wordsDeck.name"
+              >{{ wordsDeck.name }}</option>
+            </select>
+          </div>
         </form>
       </div>
     </div>
@@ -415,7 +415,8 @@ export default {
 }
 
 img#joinQR {
-  width: 13em;
+  width: 15em;
+  max-width: 100%;
 }
 
 #teams {

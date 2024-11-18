@@ -7,6 +7,7 @@ import Team from './Team.js'
 
 const defaultConfig = {
   mode: 'classic',
+  wordDeck: 'Easy',
   numCardsSqrt: 5,
   numTeams: 2,
   numTeamCards: 9,

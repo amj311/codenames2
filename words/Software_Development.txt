@@ -1,0 +1,323 @@
+website
+application
+frontend
+backend
+full-stack
+API
+framework
+library
+component
+responsive
+SEO
+function
+variable
+object
+array
+loop
+condition
+event
+DOM
+asynchronous
+promise
+JSX
+state
+props
+hooks
+context
+virtual DOM
+render
+lifecycle
+server-side
+non-blocking
+event-driven
+module
+package
+express
+REST API
+middleware
+state management
+observable
+action
+reaction
+model
+store
+tree
+ORM
+database
+association
+query
+migration
+seed
+schema
+table
+column
+constraint
+trigger
+function
+view
+select
+insert
+update
+delete
+join
+aggregate
+procedure
+
+
+
+
+Redux
+Vue
+Angular
+TypeScript
+GraphQL
+REST
+JSON
+XML
+HTML
+CSS
+Bootstrap
+Material-UI
+Next.js
+Gatsby
+Webpack
+Babel
+NPM
+Yarn
+Docker
+Kubernetes
+CI/CD
+testing
+unit testing
+integration testing
+end-to-end testing
+debugging
+profiling
+performance optimization
+security
+authentication
+authorization
+scalability
+maintainability
+best practices
+design patterns
+SOLID
+DRY
+KISS
+YAGNI
+Agile
+Scrum
+Kanban
+Git
+GitHub
+Bitbucket
+version control
+collaboration
+teamwork
+problem-solving
+critical thinking
+creativity
+innovation
+
+middleware
+router
+request
+response
+error handling
+static files
+templating engine
+session
+cookie
+authentication
+authorization.
+
+injection
+broken access control
+cryptographic failures
+insecure design
+security misconfiguration
+vulnerable components
+authentication failures
+data integrity failures
+logging failures
+server-side request forgery
+SQL injection
+cross-site scripting (XSS)
+cross-site request forgery (CSRF)
+session hijacking
+man-in-the-middle attack
+brute force attack
+denial-of-service (DoS)
+distributed denial-of-service (DDoS)
+phishing
+malware
+ransomware
+zero-day exploit
+vulnerability scanning
+penetration testing
+security audit
+incident response
+risk assessment
+threat modeling
+security policy
+access control
+encryption
+hashing
+digital signature
+public key infrastructure (PKI)
+firewall
+intrusion detection system
+IDS
+intrusion prevention system
+IPS
+web application firewall
+WAF
+security information and event management
+SIEM
+vulnerability management
+patch management
+SLIDE
+
+
+function
+variable
+object
+array
+string
+number
+boolean
+null
+undefined
+operator
+expression
+statement
+control flow
+loop
+conditional
+function
+scope
+closure
+prototype
+inheritance
+class
+module
+export
+import
+async
+await
+promise
+error handling
+try-catch
+finally
+exception
+regular expression
+DOM
+event listener
+event handler
+AJAX
+fetch API
+JSON
+XML
+HTTP
+HTTPS
+server-side
+client-side
+backend
+frontend
+full-stack
+Node.js
+Express.js
+middleware
+router
+request
+response
+REST API
+WebSocket
+database
+SQL
+NoSQL
+MongoDB
+PostgreSQL
+MySQL
+ORM
+Sequelize
+Mongoose
+security
+authentication
+authorization
+encryption
+decryption
+hashing
+digital signature
+certificate authority
+public key cryptography
+private key cryptography
+symmetric key cryptography
+asymmetric key cryptography
+cryptography algorithms
+hashing algorithms
+encryption algorithms
+decryption algorithms
+key exchange
+digital certificates
+SSL/TLS
+HTTPS
+HTTP.
+
+
+SELECT
+FROM
+WHERE
+JOIN
+GROUP BY
+HAVING
+ORDER BY
+INSERT
+UPDATE
+DELETE
+CREATE TABLE
+ALTER TABLE
+DROP TABLE
+PRIMARY KEY
+FOREIGN KEY
+UNIQUE
+NOT NULL
+DEFAULT
+CHECK
+INDEX
+VIEW
+TRIGGER
+FUNCTION
+PROCEDURE
+TRANSACTION
+COMMIT
+ROLLBACK
+SAVEPOINT
+DATABASE
+SCHEMA
+TABLE
+COLUMN
+DATA TYPE
+INT
+VARCHAR
+CHAR
+DATE
+TIME
+DATETIME
+BOOLEAN
+NULL
+NOT NULL
+PRIMARY KEY
+FOREIGN KEY
+UNIQUE
+CHECK
+DEFAULT
+INDEX
+VIEW
+TRIGGER
+FUNCTION
+PROCEDURE
+TRANSACTION
+COMMIT
+ROLLBACK
+SAVEPOINT
