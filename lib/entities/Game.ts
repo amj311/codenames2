@@ -127,7 +127,6 @@ export default class Game {
         return new RevealCardResponse(card, cardBelongsToTeamOfTurn, game)
       },
 
-
       advanceTurn() {
         if (!game.state.canRevealCard) return;
         if (!game.teamOfTurn) game.teamOfTurn = game.teams.teamOne;

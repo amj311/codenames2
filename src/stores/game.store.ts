@@ -17,6 +17,8 @@ export const useGameStore = defineStore('game', {
     gameState: null as any,
     roomState: null as any,
     pingTimeout: null as any,
+    lastSuccessfulAction: Date.now(),
+    pingError: null as any,
   }),
   actions: {
     loadGameRoom(id: string) {
@@ -48,13 +50,14 @@ export const useGameStore = defineStore('game', {
       }
       catch (err) {
         console.error(err);
-        this.handlePingError();
+        this.handlePingError(err);
       }
     },
     schedulePing() {
       this.pingTimeout = setTimeout(this.doPing, PING_INTERVAL);
     },
-    handlePingError() {
+    handlePingError(error) {
+      this.pingError = error;
     },
 
     getUserById(userId) {
@@ -62,30 +65,44 @@ export const useGameStore = defineStore('game', {
     },
 
     async doGameAction(action, data?) {
-      const { data: resData } = await api.post('/room/' + this.gameRoomId + '/game-action/' + action, {
-        userId: this.user.id,
-        data,
-      });
-      if (!resData.success) {
-        throw new Error("Server Error");
+      try {
+        const { data: resData } = await api.post('/room/' + this.gameRoomId + '/game-action/' + action, {
+          userId: this.user.id,
+          data,
+        });
+        if (!resData.success) {
+          throw new Error("Unsuccessful Game Action");
+        }
+        this.setGameState(resData.game);
+        this.setRoomState(resData.room);
+        this.setUser(resData.user);
+        this.lastSuccessfulAction = Date.now();
+        this.pingError = null;
+        return resData.actionRes;
       }
-      this.setGameState(resData.game);
-      this.setRoomState(resData.room);
-      this.setUser(resData.user);
-      return resData.actionRes;
+      catch (err) {
+        this.handlePingError(err);
+      }
     },
     async doRoomAction(action, data?) {
-      const { data: resData } = await api.post('/room/' + this.gameRoomId + '/room-action/' + action, {
-        userId: this.user.id,
-        data,
-      });
-      if (!resData.success) {
-        throw new Error("Server Error");
+      try {
+        const { data: resData } = await api.post('/room/' + this.gameRoomId + '/room-action/' + action, {
+          userId: this.user.id,
+          data,
+        });
+        if (!resData.success) {
+          throw new Error("Server Error");
+        }
+        this.setGameState(resData.game);
+        this.setRoomState(resData.room);
+        this.setUser(resData.user);
+        this.lastSuccessfulAction = Date.now();
+        this.pingError = null;
+        return resData.actionRes;
       }
-      this.setGameState(resData.game);
-      this.setRoomState(resData.room);
-      this.setUser(resData.user);
-      return resData.actionRes;
+      catch (err) {
+        this.handlePingError(err);
+      }
     },
     updateCache() {
       sessionStorage.setItem('savedState', JSON.stringify({
@@ -103,6 +120,8 @@ export const useGameStore = defineStore('game', {
       this.setRoomState(null);
       clearInterval(this.pingTimeout);
       this.pingTimeout = null;
+      this.lastSuccessfulAction = Date.now();
+      this.pingError = null;
     }
   },
   getters: {

@@ -32,7 +32,7 @@ app.get('*', (req, res) => {
 // ROOMS
 const roomIds = new UniqueIdManager(5);
 const rooms = new Map<string, GameRoom>();
-const roomDeleteDelay = 1000 * 60 * 5;
+const roomDeleteDelay = 1000 * 60 * 30;
 
 function createRoom() {
   const newRoom = new GameRoom(roomIds.getNew());

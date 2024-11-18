@@ -1,9 +1,7 @@
 import Game from '../entities/Game.js';
 import UserConnection from '../entities/UserConnection.js';
-import { getCaptainsTeam } from '../services/GameHelpers.js';
 import UniqueIdManager from '../services/UniqueIdManager.js';
 
-const WAS_CAPTAIN_TEAM = 'WAS_CAPTAIN_TEAM';
 const userIds = new UniqueIdManager(10);
 
 const ACTIVE_USER_TIME = 60 * 1000;

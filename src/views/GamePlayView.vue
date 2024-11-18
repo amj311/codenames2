@@ -259,7 +259,10 @@ export default {
               START TURN
             </button>
           </div>
-          <div v-else>Waiting for team captain...</div>
+          <div
+            v-else
+            style="text-align:center; flex-grow: 1;"
+          >Waiting for hint...</div>
         </div>
         <div
           id="winnerMsg"
@@ -387,7 +390,7 @@ div#playArea {
 
 #roundSummary {
   font-weight: bold;
-  padding: .4em;
+  margin-bottom: 2em;
   text-align: center;
   width: 100%;
   box-sizing: border-box;
