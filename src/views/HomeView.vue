@@ -4,180 +4,172 @@ import { mapStores } from 'pinia'
 import { useGameStore } from '@/stores/game.store';
 
 export default {
-	components: {
-	},
-	data() {
-		return ({
-			apiUrl: '',
-			showMenu: false,
-			activeMenu: 'new',
-			newGameMode: 'party',
-			roomToJoin: '',
-		})
-	},
+  components: {
+  },
+  data() {
+    return ({
+      showMenu: false,
+      activeMenu: 'new',
+      newGameMode: 'party',
+      roomToJoin: '',
+    })
+  },
 
-	mounted() {
-	},
+  mounted() {
+  },
 
-	computed: {
-		...mapStores(useGameStore),
-	},
+  computed: {
+    ...mapStores(useGameStore),
+  },
 
-	methods: {
-		openMenu(menu) {
-			this.showMenu = true;
-			this.activeMenu = menu;
-		},
-		closeMenu() {
-			console.log("closing menu");
-			this.showMenu = false;
-		},
-		async startGame() {
-			try {
-				const { data } = await api.post(this.apiUrl + '/room/new');
-				this.gameStore.setUser(data.hostUser);
-				this.gameStore.loadGameRoom(data.rid);
-				this.$router.push('/play');
-			}
-			catch (err) {
-				console.error(err);
-			}
-		},
-		async joinGame(rid: string) {
-			try {
-				const { data } = await api.post(this.apiUrl + '/room/' + rid + '/join');
-				this.gameStore.setUser(data.user);
-				this.gameStore.loadGameRoom(data.room.id);
-				this.$router.push('/play');
-			}
-			catch (err) {
-				console.error(err);
-			}
-		},
-	}
+  methods: {
+    openMenu(menu) {
+      this.showMenu = true;
+      this.activeMenu = menu;
+    },
+    closeMenu() {
+      console.log("closing menu");
+      this.showMenu = false;
+    },
+    async startGame() {
+      try {
+        const { data } = await api.post('/room/new');
+        this.gameStore.setUser(data.hostUser);
+        this.gameStore.loadGameRoom(data.rid);
+        this.$router.push('/play');
+      }
+      catch (err) {
+        console.error(err);
+      }
+    },
+    async joinGame() {
+      await this.gameStore.joinGame(this.roomToJoin);
+      this.$router.push('/play');
+    }
+  }
 }
 </script>
 
 <template>
-	<div id="home">
-		<div style="text-align: center;">
-			<img
-				id="logo"
-				src="@/assets/logos/ai1.png"
-			/>
-			<div
-				id="slideContainer"
-				:class="{ slid: showMenu }"
-			>
-				<div
-					id="main"
-					class="slide-pane"
-				>
-					<button
-						@click="startGame"
-						class="ui-raised ui-pressable ui-shiny"
-					>New Game</button>
-					<button
-						@click="openMenu('join')"
-						class="ui-raised ui-pressable ui-shiny"
-					>Join a Game</button>
-				</div>
-				<div
-					id="join"
-					class="slide-pane"
-				>
-					<div
-						id="joinModal"
-						class="ui-block"
-					>
-						<form
-							@submit.prevent="joinGame(roomToJoin)"
-							id="joinMenu"
-						>
-							<div style="display: flex; align-items: center;">
-								<div
-									id="closeMenu"
-									class="material-icons"
-									@click="closeMenu"
-								>
-									arrow_back
-								</div>
-								&nbsp;&nbsp;
-								<input
-									type="text"
-									ref="roomToJoin"
-									v-model="roomToJoin"
-									placeholder="Room code"
-									style="text-transform: uppercase; font-size: 1.1em"
-									maxlength="5"
-									size="15"
-								>
-								<button
-									role="submit"
-									:disabled="roomToJoin.length < 5"
-									class="ui-pressable ui-shiny ui-raised"
-								>GO!</button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <div id="home">
+    <div style="text-align: center;">
+      <img
+        id="logo"
+        src="@/assets/logos/ai1.png"
+      />
+      <div
+        id="slideContainer"
+        :class="{ slid: showMenu }"
+      >
+        <div
+          id="main"
+          class="slide-pane"
+        >
+          <button
+            @click="startGame"
+            class="ui-raised ui-pressable ui-shiny"
+          >New Game</button>
+          <button
+            @click="openMenu('join')"
+            class="ui-raised ui-pressable ui-shiny"
+          >Join a Game</button>
+        </div>
+        <div
+          id="join"
+          class="slide-pane"
+        >
+          <div
+            id="joinModal"
+            class="ui-block"
+          >
+            <form
+              @submit.prevent="joinGame"
+              id="joinMenu"
+            >
+              <div style="display: flex; align-items: center;">
+                <div
+                  id="closeMenu"
+                  class="material-icons"
+                  @click="closeMenu"
+                >
+                  arrow_back
+                </div>
+                &nbsp;&nbsp;
+                <input
+                  type="text"
+                  ref="roomToJoin"
+                  v-model="roomToJoin"
+                  placeholder="Room code"
+                  style="text-transform: uppercase; font-size: 1.1em"
+                  maxlength="5"
+                  size="15"
+                >
+                <button
+                  role="submit"
+                  :disabled="roomToJoin.length < 5"
+                  class="ui-pressable ui-shiny ui-raised"
+                >GO!</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style
-	scoped
-	lang="scss"
+  scoped
+  lang="scss"
 >
 #home {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 #logo {
-	width: 75vw;
-	max-width: 500px;
+  width: 75vw;
+  max-width: 500px;
 }
 
 #slideContainer {
-	position: relative;
-	width: 100%;
-	height: 30vh;
-	transition: 200ms ease-out;
-	overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 30vh;
+  transition: 200ms ease-out;
+  overflow: hidden;
 }
 
 #slideContainer .slide-pane {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: 200ms ease-out;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 200ms ease-out;
 }
 
 #join {
-	right: -100%;
+  right: -100%;
 }
 
 #slideContainer.slid .slide-pane {
-	translate: -100% 0;
+  translate: -100% 0;
 }
 
 div#joinModal {
-	display: flex;
-	flex-direction: column;
-	width: auto;
+  display: flex;
+  flex-direction: column;
+  width: auto;
 }
 
 div#closeMenu {
-	cursor: pointer;
-	user-select: none;
+  cursor: pointer;
+  user-select: none;
 }
 </style>

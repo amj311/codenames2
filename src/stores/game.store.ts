@@ -3,8 +3,6 @@ import { PING_INTERVAL } from '../../lib/constants';
 import { getCaptainsTeam } from '../../lib/services/GameHelpers';
 import api from '@/services/api';
 
-// const savedState = localStorage.hasItem('savedState') ? JSON.parse(localStorage.getItem('savedState')!) : null
-
 export const useGameStore = defineStore('game', {
   state: () => ({
     savedState: null,
@@ -123,7 +121,18 @@ export const useGameStore = defineStore('game', {
       this.pingTimeout = null;
       this.lastSuccessfulAction = Date.now();
       this.pingError = null;
-    }
+    },
+
+    async joinGame(rid: string) {
+      try {
+        const { data } = await api.post('/room/' + rid + '/join');
+        this.setUser(data.user);
+        this.loadGameRoom(data.room.id);
+      }
+      catch (err) {
+        console.error(err);
+      }
+    },
   },
   getters: {
     isHost(state) {
