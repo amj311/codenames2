@@ -31,16 +31,3 @@ export default class WordListService {
     return txt.replace(/\n+/g, ',').replace(/,[, ]+/g, ',').split(/ *, */g);
   }
 }
-
-// (async () => {
-//   const wordService = new WordListService();
-//   try {
-//     const data = readFileSync('./words/LDS_Easy.txt', 'utf8');
-//     console.log(data.toString().replace(/\n+/g, ',').replace(/,[, ]+/g, ',').split(/ *, */g));
-
-//     console.log(wordService.getWordList('LDS - Easy'));
-//   } catch (e) {
-//     console.log('Error:', e.stack);
-//   }
-// })();
-

@@ -150,7 +150,6 @@ button.inline,
 .button.inline {
     display: inline-flex;
     margin: 0;
-    font-size: 0.8em;
 }
 
 i.material-icons {
@@ -185,16 +184,16 @@ button i.material-icons {
 
 .ui-raised,
 .ui-block {
-    filter: drop-shadow(1px 1px 3px #0005);
+    filter: drop-shadow(1px 1px 2px #0004);
 }
 
 img.ui-raised {
-    filter: drop-shadow(1px 1px 3px #0004);
+    filter: drop-shadow(1px 1px 2px #0004);
 }
 
 .ui-raised.ui-pressable:hover,
 .ui-raised.ui-pressable:focus {
-    filter: drop-shadow(3px 3px 5px 0px #0004);
+    filter: drop-shadow(2px 2px 5px 0px #0004);
     transform: translateY(-1px);
 }
 

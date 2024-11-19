@@ -37,7 +37,6 @@ export default class GenerateCardsService {
     const numCards = suitesToFill.reduce((total, suite) => total + suite.qty, 0)
 
     const wordSet = this.getWordListService().getWordList(config.wordDeck, customWords);
-    console.log(wordSet);
     if (wordSet.length < numCards) {
       return [];
     }
