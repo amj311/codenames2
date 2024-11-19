@@ -70,87 +70,31 @@ export default {
     },
 
     methods: {
-        initEndGame() {
-            this.gameStore().doGameAction('endGame');
-        },
-        onEndGame(game) {
-            // this.$store.dispatch('updateGameState', game)
-        },
-        initExitGame() {
-            this.gameStore().doGameAction('exitGame');
-        },
-        onExitGame(game) {
-            // this.$store.dispatch('updateGameState', game)
-        },
-        promptEndGame() {
-            // this.$store.dispatch('openModal', {
-            //   msg: "Are you sure you want to end this game?",
-            //   onOK: () => this.initEndGame(),
-            //   onNO: () => { return },
-            //   onEX: () => { return },
-            // })
-            if (confirm("Are you sure you want to end this game?")) this.initEndGame();
-        },
-
-        printSecretKey() {
-            console.group('Cards')
-            const sqrt = this.gameState.config.numCardsSqrt;
-            for (let row = 0; row < sqrt; row++) {
-                let words = "";
-                const styles = [];
-                for (let col = 0; col < sqrt; col++) {
-                    const card = this.gameState.cards[row * sqrt + col]
-                    words += `%c ${card.word[0]} `
-                    styles.push(`background-color: ${card.color}; color: #fff; padding: .1em; margin-right:2px; font-weight: bold; text-shadow: 1px 1px 1px #0005; border-radius:.2em`)
-                }
-                console.log(words, ...styles)
-            }
-            console.groupEnd();
-        },
+        // printSecretKey() {
+        //     console.group('Cards')
+        //     const sqrt = this.gameState.config.numCardsSqrt;
+        //     for (let row = 0; row < sqrt; row++) {
+        //         let words = "";
+        //         const styles = [];
+        //         for (let col = 0; col < sqrt; col++) {
+        //             const card = this.gameState.cards[row * sqrt + col]
+        //             words += `%c ${card.word[0]} `
+        //             styles.push(`background-color: ${card.color}; color: #fff; padding: .1em; margin-right:2px; font-weight: bold; text-shadow: 1px 1px 1px #0005; border-radius:.2em`)
+        //         }
+        //         console.log(words, ...styles)
+        //     }
+        //     console.groupEnd();
+        // },
 
         initCardFlip(e) {
             if (this.canFlip) {
                 this.gameStore().doGameAction('revealCard', { cardId: e.card.id })
             }
-            else if (this.gameState.state.canRevealCard && this.userCaptainOfTeam) {
-                // this.$store.dispatch("publishNotif", new Notification({
-                //   type: "err",
-                //   msg: "It is not your team's turn yet!"
-                // }))
-            }
-        },
-
-        onRevealCard(res) {
-            this.preventPlay = true;
-
-            if (this.gameState.winner) {
-                const context = this;
-                setTimeout(() => {
-                    context.preventPlay = false;
-                    // this.$store.dispatch('openModal', {
-                    //   msg: this.gameState.winner.name + " wins!",
-                    //   img: { path: this.gameState.teams[this.gameState.winner.id].img, w: '15em', h: '15em' },
-                    //   onEX() { },
-                    //   timeout: 3000,
-                    // });
-                    alert(this.gameState.winner.name + " wins!")
-                }, 1000);
-            }
-
-            else if (!res.wasTeamCard) {
-                setTimeout(() => this.advanceTurn(res.gameData), 1000);
-            }
-
-            else this.preventPlay = false;
         },
 
         getCardTeam(card) {
             const team = Array.from(Object.values(this.gameState.teams)).find(t => t.name = card.team.name);
             return team;
-        },
-        increaseCardTeamPoint(card) {
-            const team = this.getCardTeam(card)
-            team.points++;
         },
 
         initAdvanceTurn() {
