@@ -96,7 +96,7 @@ export default {
         },
         async startTurn() {
             if (!this.newHint || !this.newHintMatches) {
-                alert("Please enter a word and number of attempts");
+                alert("Please enter a hint and how many words it matches!");
                 return;
             };
             await this.gameStore().doGameAction('startTurn', {
