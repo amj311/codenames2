@@ -5,30 +5,57 @@ import { useGameStore } from "@/stores/game.store";
 import { useAppStore } from "@/stores/app.store";
 
 export default {
-    props: ["card", "freeRotate"],
+    props: ["card"],
 
     data() {
         return {
-            ...mapStores(useGameStore, useAppStore),
             flipped: false,
             showFlip: false,
+            waitForFreeRotate: false,
             anims: [],
+        }
+    },
+
+    computed: {
+        ...mapStores(useGameStore, useAppStore),
+
+        showTeamImg() {
+            return this.gameStore.gameState.winningCard && this.gameStore.gameState.winningCard.id === this.card.id;
+        },
+
+        isRevealed() {
+            return this.card.revealed;
+        },
+        canFlip() {
+            return (
+                !this.card.revealed &&
+                this.gameStore.gameState.state.canRevealCard &&
+                (
+                    this.gameStore.userCaptainOfTeam && this.gameStore.gameState.teamOfTurn?.id === this.gameStore.userCaptainOfTeam?.id
+                    || this.gameStore.roomState.users.length === 2
+                )
+            )
+        },
+        freeRotate() {
+            return this.card.revealed || this.gameStore.gameState.state.isGameOver;
         }
     },
 
     methods: {
         onMouseEnter() {
-            if (!this.freeRotate && !this.card.revealed) {
+            if (this.canFlip) {
                 setTimeout(() => this.showFlip = true, 5);
             }
         },
         onMouseLeave() {
             setTimeout(() => this.showFlip = false, 5);
+            this.waitForFreeRotate = false;
         },
 
-        emitClick(event) {
+        doFlipCard() {
             if (!this.showFlip) return;
-            this.$emit('tryFlip', { event, card: this.card })
+            this.waitForFreeRotate = true;
+            this.gameStore.doGameAction('revealCard', { cardId: this.card.id })
         },
 
 
@@ -61,32 +88,19 @@ export default {
         animateTeamNinja() {
             const duration = 1500;
             const id = `anim_${Date.now()}`
-            this.anims.push({ id, ninja: this.appStore().teamImgs[this.card.suiteId], class: `fade-grow`, duration, size: '3rem' })
+            this.anims.push({ id, ninja: this.appStore.teamImgs[this.card.suiteId], class: `fade-grow`, duration, size: '3rem' })
             const app = this;
-            setTimeout(function () { app.removeAnim(id) }, duration)
+            setTimeout(function () {
+                app.removeAnim(id);
+            }, duration)
         },
-    },
-
-    computed: {
-        isUserCaptain() {
-            if (getCaptainsTeam(this.gameStore().user, this.gameStore().gameState.teams)) return true;
-            else return false;
-        },
-
-        showTeamImg() {
-            return this.gameStore().gameState.winningCard && this.gameStore().gameState.winningCard.id === this.card.id;
-        },
-
-        isRevealed() {
-            return this.card.revealed;
-        }
     },
 
     watch: {
         isRevealed() {
             this.animateTeamNinja();
             // if (res.wasTeamCard) this.animateGoodFlip(res.card.id);
-            // else if (res.card.suiteId == this.gameState.teams.assassin.id) this.animateAssassin(res.card.id);
+            // else if (res.card.suiteId == this.gameStore.gameState.teams.assassin.id) this.animateAssassin(res.card.id);
             // else this.animateBadFlip(res.card.id)
         }
     }
@@ -97,19 +111,19 @@ export default {
 <template>
     <div
         class="wrapper"
-        :class="{ flipped: card.revealed, freeRotate: freeRotate }"
+        :class="{ flipped: card.revealed, freeRotate: freeRotate && !waitForFreeRotate }"
         :style="{ zIndex: anims.length > 0 ? 1 : 0 }"
+        @mouseenter="onMouseEnter"
+        @mouseleave="onMouseLeave"
     >
         <div class="card">
             <div
                 class="card-face front ui-raised"
                 :class="{ 'ui-pressable': !card.revealed && !freeRotate }"
-                @mouseenter="onMouseEnter"
-                @mouseleave="onMouseLeave"
-                @click="emitClick"
+                @click="doFlipCard"
             >
                 <div
-                    v-if="isUserCaptain"
+                    v-if="gameStore.userCaptainOfTeam"
                     class="color-banner"
                     :style="{ backgroundColor: card.color }"
                 ></div>
@@ -134,7 +148,7 @@ export default {
                     v-if="showTeamImg"
                     style="width: 3em; aspect-ratio: 1; background-size: contain; background-position: center; background-repeat: no-repeat; "
                     class="ui-raised"
-                    :class="`bg-ninja-${appStore().teamImgs[card.suiteId]}`"
+                    :class="`bg-ninja-${appStore.teamImgs[card.suiteId]}`"
                 />
             </div>
         </div>
@@ -252,7 +266,7 @@ export default {
     align-items: center;
     justify-content: center;
     user-select: none;
-    font-size: .9em;
+    font-size: .8em;
 }
 
 .back {

@@ -86,12 +86,6 @@ export default {
         //     console.groupEnd();
         // },
 
-        initCardFlip(e) {
-            if (this.canFlip) {
-                this.gameStore().doGameAction('revealCard', { cardId: e.card.id })
-            }
-        },
-
         getCardTeam(card) {
             const team = Array.from(Object.values(this.gameState.teams)).find(t => t.name = card.team.name);
             return team;
@@ -241,11 +235,7 @@ export default {
                     class="card-cell"
                     :style="{ width: cardWidth + '%', 'padding-top': cardWidth * .60 + '%' }"
                 >
-                    <Card
-                        :freeRotate="gameState.state.isGameOver"
-                        :card="card"
-                        @tryFlip="initCardFlip"
-                    />
+                    <Card :card="card" />
                 </div>
             </div>
 

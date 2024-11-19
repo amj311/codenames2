@@ -139,8 +139,17 @@ async function saveUsername() {
           >
             {{ gameStore.gameState.teamOfTurn.name }}'s Turn
           </div>
+
           <div
-            v-if="!gameStore.gameState.state.isInPlay"
+            v-if="userCanResetGame"
+            @click="resetGame"
+            class="button text"
+            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
+          >
+            <i class="material-icons">replay</i>
+          </div>
+          <div
+            v-else-if="!gameStore.gameState.state.isGameOver"
             @click="promptLeaveRoom"
             class="button text"
             style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
@@ -154,14 +163,6 @@ async function saveUsername() {
             style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
           >
             PLAY AGAIN
-          </div>
-          <div
-            v-else-if="userCanResetGame"
-            @click="resetGame"
-            class="button text"
-            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-          >
-            <i class="material-icons">replay</i>
           </div>
         </div>
       </template>
