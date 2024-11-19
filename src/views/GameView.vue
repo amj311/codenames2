@@ -199,7 +199,7 @@ async function saveUsername() {
             </template>
 
             <template v-slot:loading>
-                <div>Loading...</div>
+                <div style="width: 100%; text-align: center; margin-top: 3em;">Loading...</div>
             </template>
         </SwapView>
     </div>

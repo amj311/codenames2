@@ -175,8 +175,12 @@ export default {
                 <div
                     id="duringTurn"
                     v-if="gameState.state.name === 'turnPrep'"
+                    style="justify-content: center;"
                 >
                     <div v-if="showTurnPrep">
+                        <div style="margin-bottom: 1em">
+                            Write a hint for some your cards!
+                        </div>
                         <input
                             type="text"
                             v-model="newHint"
@@ -197,10 +201,7 @@ export default {
                             START TURN
                         </button>
                     </div>
-                    <div
-                        v-else
-                        style="text-align:center; flex-grow: 1;"
-                    >Waiting for hint...</div>
+                    <div v-else>Waiting for hint...</div>
                 </div>
                 <div
                     id="winnerMsg"
