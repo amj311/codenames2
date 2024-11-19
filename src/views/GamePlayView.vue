@@ -22,7 +22,7 @@ export default {
     },
 
     mounted() {
-        this.printSecretKey();
+        // this.printSecretKey();
     },
 
     beforeUnmount() {

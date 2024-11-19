@@ -393,7 +393,7 @@ export default {
               <input
                 type="number"
                 v-model="tmpConfig.numTeamCards"
-                @input="updateTeamCardsByAvailableSpace"
+                @change="updateTeamCardsByAvailableSpace"
                 min="1"
                 :max="maxCompTeamQty"
               >
@@ -403,7 +403,7 @@ export default {
               <input
                 type="number"
                 v-model="tmpConfig.numAssassins"
-                @input="updateTeamCardsByAvailableSpace"
+                @change="updateTeamCardsByAvailableSpace"
                 min="0"
                 max="3"
               >
