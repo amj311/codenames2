@@ -5,6 +5,10 @@ import { useGameStore } from '@/stores/game.store';
 import { mapStores } from 'pinia';
 import { useAppStore } from '@/stores/app.store';
 
+function minmax(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 export default {
   data() {
     return ({
@@ -49,7 +53,13 @@ export default {
 
     configTrigger() {
       if (this.externalUpdate) return;
-      this.pushTmpConfig();
+      // check bounds
+      const newConfig = { ...this.tmpConfig };
+      newConfig.numAssassins = minmax(this.tmpConfig.numAssassins, 1, 3);
+      newConfig.numTeamCards = minmax(this.tmpConfig.numTeamCards, 1, this.maxCompTeamQty);
+
+      // push
+      this.pushTmpConfig(newConfig);
     },
 
     customDecksTrigger() {
@@ -60,10 +70,10 @@ export default {
 
 
   methods: {
-    async pushTmpConfig() {
+    async pushTmpConfig(config?) {
       try {
         await this.gameStore().doGameAction('configure', {
-          config: this.tmpConfig,
+          config: config || this.tmpConfig,
           customWords: this.selectedCustomWords,
         });
       }
@@ -295,8 +305,8 @@ export default {
               </span>
             </div>
             <div v-else>
-              <div class="no-master-message">No codemaster yet</div>
-              <div class="be-master-message">Become codemaster!</div>
+              <div v-if="!userCaptainOfTeam">Click to be codemaster</div>
+              <div v-else>No codemaster yet</div>
             </div>
           </div>
         </div>
@@ -379,21 +389,23 @@ export default {
             class="form-row"
           >
             <div>
-              <label>Team Cards</label>
+              <label>Team Cards&nbsp;&nbsp;</label>
               <input
                 type="number"
                 v-model="tmpConfig.numTeamCards"
+                @input="updateTeamCardsByAvailableSpace"
                 min="1"
                 :max="maxCompTeamQty"
               >
             </div>
             <div>
-              <label>Assassins</label>
+              <label>Assassins&nbsp;&nbsp;</label>
               <input
                 type="number"
                 v-model="tmpConfig.numAssassins"
+                @input="updateTeamCardsByAvailableSpace"
                 min="0"
-                :max="3"
+                max="3"
               >
             </div>
           </div>
@@ -435,7 +447,7 @@ export default {
         <div
           v-else
           style="text-align:right; font-size:.8em; font-weight:bold"
-        >Waiting to begin...</div>
+        >Waiting for codemasters...</div>
       </div>
     </div>
 
@@ -612,18 +624,6 @@ div#teamLists {
 
 .team-caption-option.no-captain:hover .ninja {
   transform: scale(1.1);
-}
-
-.team-caption-option .be-master-message {
-  display: none;
-}
-
-.team-caption-option:hover .be-master-message {
-  display: block;
-}
-
-.team-caption-option:hover .no-master-message {
-  display: none;
 }
 
 .team-caption-option .remove-captain {
