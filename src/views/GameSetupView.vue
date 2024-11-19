@@ -52,13 +52,7 @@ export default {
         },
 
         configTrigger() {
-            // check bounds
-            const newConfig = { ...this.tmpConfig };
-            newConfig.numAssassins = minmax(this.tmpConfig.numAssassins, 1, 3);
-            newConfig.numTeamCards = minmax(this.tmpConfig.numTeamCards, 1, this.maxCompTeamQty);
-
-            // push
-            this.pushTmpConfig(newConfig);
+            this.updateTeamCardsByAvailableSpace();
         },
 
         customDecksTrigger() {
@@ -111,11 +105,10 @@ export default {
         },
 
         updateTeamCardsByAvailableSpace() {
-            const availableCards = ((this.tmpConfig.numCardsSqrt ** 2) - this.tmpConfig.numAssassins);
-            const currentTeamCards = this.tmpConfig.numTeamCards * this.tmpConfig.numTeams;
-            if (currentTeamCards > availableCards) {
-                this.tmpConfig.numTeamCards = Math.floor(availableCards / this.tmpConfig.numTeams);
-            }
+            const newConfig = { ...this.tmpConfig };
+            newConfig.numAssassins = minmax(this.tmpConfig.numAssassins, 1, 3);
+            newConfig.numTeamCards = minmax(this.tmpConfig.numTeamCards, 1, this.maxCompTeamQty);
+            this.pushTmpConfig(newConfig);
         },
 
         openCustomDeckModal(deckData?) {
@@ -377,7 +370,6 @@ export default {
                             type="range"
                             name="numCards"
                             v-model="tmpConfig.numCardsSqrt"
-                            @input="updateTeamCardsByAvailableSpace"
                             min="3"
                             max="6"
                         >
@@ -392,7 +384,6 @@ export default {
                             <input
                                 type="number"
                                 v-model="tmpConfig.numTeamCards"
-                                @blur="updateTeamCardsByAvailableSpace"
                                 min="1"
                                 :max="maxCompTeamQty"
                             >
@@ -402,7 +393,6 @@ export default {
                             <input
                                 type="number"
                                 v-model="tmpConfig.numAssassins"
-                                @blur="updateTeamCardsByAvailableSpace"
                                 min="0"
                                 max="3"
                             >
