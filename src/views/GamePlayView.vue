@@ -263,7 +263,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 div#boardWrapper {
-    min-height: calc(100vh - 6rem);
+    min-height: calc(100vh - 7rem);
     width: 140vh;
     max-width: calc(100vw - 3rem);
     display: flex;
