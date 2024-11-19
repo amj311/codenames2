@@ -44,14 +44,15 @@ export default {
 
     watch: {
         gameConfig(val) {
-            this.externalUpdate = true
+            this.externalUpdate = true;
             this.tmpConfig = { ...val };
             this.$nextTick(() => {
-                this.externalUpdate = false
+                this.externalUpdate = false;
             })
         },
 
         configTrigger() {
+            if (this.externalUpdate) return;
             this.updateTeamCardsByAvailableSpace();
         },
 
