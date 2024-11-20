@@ -205,6 +205,7 @@ export default {
             exposure_plus_1
           </div>
           <div style="flex-grow:1;" />
+          {{ canFlip }}
           <button
             @click="initAdvanceTurn"
             v-if="canFlip"

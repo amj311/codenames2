@@ -20,23 +20,41 @@ export const useGameStore = defineStore('game', {
     pingError: null as any,
   }),
   actions: {
-    loadGameRoom(id: string) {
-      clearTimeout(this.pingTimeout);
-      this.gameRoomId = id;
+    async newGame() {
+      this.clear();
+      const { data } = await api.post('/room/new');
+      this.upsertJoinedGame({ gameRoomId: data.rid, userId: data.hostUser.id });
+      console.log("loaded user!", data.hostUser);
+      console.log("saved joined game", this.getJoinedGame(data.rid));
+      await this.joinGame(data.rid);
+      return data.rid;
+    },
+
+    async joinGame(rid: string) {
+      console.log("loading joined game", this.getJoinedGame(rid));
+      const returningUserId = this.getJoinedGame(rid)?.userId;
+      const { data } = await api.post('/room/' + rid + '/join', {
+        returningUserId,
+      });
+      this.clear();
+      this.gameRoomId = rid;
+      console.log("loaded user!", data.user);
+      this.setUser(data.user);
+      this.setGameState(data.game);
+      this.setRoomState(data.room);
       this.initPings();
     },
+
     setGameState(state) {
       this.gameState = state;
-      this.updateCache();
     },
     setRoomState(state) {
       this.roomState = state;
-      this.updateCache();
     },
     setUser(user) {
       this.user = user;
-      this.updateCache();
     },
+
     initPings() {
       if (this.pingTimeout) {
         clearTimeout(this.pingTimeout);
@@ -64,14 +82,14 @@ export const useGameStore = defineStore('game', {
       return this.roomState.users.find((user) => user.id === userId);
     },
 
-    async doGameAction(action, data?) {
+    async doAction(type: 'game' | 'room', action, data?) {
       try {
-        const { data: resData } = await api.post('/room/' + this.gameRoomId + '/game-action/' + action, {
+        const { data: resData } = await api.post('/room/' + this.gameRoomId + `/${type}-action/` + action, {
           userId: this.user.id,
           data,
         });
         if (!resData.success) {
-          throw new Error("Unsuccessful Game Action");
+          throw new Error(`Unsuccessful ${type} action`);
         }
         this.setGameState(resData.game);
         this.setRoomState(resData.room);
@@ -83,35 +101,38 @@ export const useGameStore = defineStore('game', {
       catch (err) {
         this.handlePingError(err);
       }
+    },
+
+    async doGameAction(action, data?) {
+      await this.doAction('game', action, data);
     },
     async doRoomAction(action, data?) {
-      try {
-        const { data: resData } = await api.post('/room/' + this.gameRoomId + '/room-action/' + action, {
-          userId: this.user.id,
-          data,
-        });
-        if (!resData.success) {
-          throw new Error("Server Error");
-        }
-        this.setGameState(resData.game);
-        this.setRoomState(resData.room);
-        this.setUser(resData.user);
-        this.lastSuccessfulAction = Date.now();
-        this.pingError = null;
-        return resData.actionRes;
-      }
-      catch (err) {
-        this.handlePingError(err);
-      }
+      await this.doAction('room', action, data);
     },
-    updateCache() {
-      sessionStorage.setItem('savedState', JSON.stringify({
-        gameRoomId: this.gameRoomId,
-        user: this.user,
-      }));
+
+    getJoinedGames() {
+      return JSON.parse(localStorage.getItem('joinedGames') || '{}');
     },
-    getCache() {
-      return JSON.parse(sessionStorage.getItem('savedState') || 'null');
+    getJoinedGame(rid) {
+      return this.getJoinedGames()[rid];
+    },
+    upsertJoinedGame({ gameRoomId, userId }) {
+      const joinedGames = this.getJoinedGames();
+      joinedGames[gameRoomId] = {
+        gameRoomId: gameRoomId,
+        userId: userId,
+      };
+      localStorage.setItem('joinedGames', JSON.stringify(joinedGames));
+    },
+    deleteJoinedGame(gameRoomId) {
+      const joinedGames = this.getJoinedGames();
+      delete joinedGames[gameRoomId];
+      localStorage.setItem('joinedGames', JSON.stringify(joinedGames));
+    },
+    async leaveGameRoom(rid) {
+      await this.doRoomAction('leaveRoom');
+      this.clear();
+      this.deleteJoinedGame(rid);
     },
     clear() {
       this.gameRoomId = null;
@@ -123,24 +144,6 @@ export const useGameStore = defineStore('game', {
       this.lastSuccessfulAction = Date.now();
       this.pingError = null;
     },
-
-    async joinGame(rid: string) {
-      try {
-        const { data } = await api.post('/room/' + rid + '/join');
-        this.setUser(data.user);
-        this.loadGameRoom(data.room.id);
-      }
-      catch (err) {
-        console.error(err);
-      }
-    },
-    async rejoinRoom(rid, user) {
-      const { data } = await api.post('/room/' + rid + '/rejoin', {
-        user,
-      });
-      this.setUser(data.user);
-      this.loadGameRoom(data.room.id);
-    }
   },
   getters: {
     isHost(state) {

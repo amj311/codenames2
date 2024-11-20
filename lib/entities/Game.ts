@@ -1,5 +1,4 @@
 import { AI_CODEMASTER, CardSuites } from '../constants.js';
-import { RevealCardResponse } from '../server/dto/RevealCard.js'
 import { AiService } from '../services/AiService.js';
 import GenerateCardsService from '../services/GenerateCardsService.js'
 import Card from './Card.js';

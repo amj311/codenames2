@@ -26,11 +26,6 @@ app.use(cors(corsOptions));
 app.use(json());
 app.use(urlencoded({ extended: false }));
 
-// STATIC SITE
-app.use(express.static('dist'));
-app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist/index.html'));
-});
 
 // ROOMS
 const roomIds = new UniqueIdManager(5);
@@ -77,6 +72,17 @@ function deleteRoom(roomId) {
   }
 }
 
+app.get('/api/room/:rid', (req, res) => {
+  console.log('Requested room: ' + req.params.rid);
+  const { rid } = req.params;
+  const roomMatch = rooms.get(rid);
+  if (roomMatch) {
+    return res.json({
+      success: true,
+    });
+  }
+  return res.status(404).json({ success: false });
+});
 
 app.post('/api/room/new', (req, res) => {
   const newRoom = createRoom();
@@ -87,29 +93,10 @@ app.post('/api/room/new', (req, res) => {
 
 app.post('/api/room/:id/join', async (req, res) => {
   const { id } = req.params;
-  console.log('Joining room...', id);
-  const roomMatch = rooms.get(id.toLowerCase());
+  const { returningUserId } = req.body;
+  const roomMatch = rooms.get(id);
   if (roomMatch) {
-    console.log("found room")
-    const newPlayer = await roomMatch.joinNewPlayer();
-    return res.json({
-      success: true,
-      user: newPlayer,
-      room: roomMatch.getRoomSummary(),
-      game: roomMatch.game.getSummary(),
-    });
-  }
-  console.log('Could not find room');
-  return res.status(404).json({ success: false });
-});
-
-
-app.post('/api/room/:id/rejoin', async (req, res) => {
-  const { id } = req.params;
-  const { user } = req.body;
-  const roomMatch = rooms.get(id.toLowerCase());
-  if (roomMatch) {
-    const joinedUser = await roomMatch.rejoinUser(user);
+    const joinedUser = await roomMatch.joinUser(returningUserId);
     return res.json({
       success: true,
       user: joinedUser,
@@ -123,7 +110,7 @@ app.post('/api/room/:id/rejoin', async (req, res) => {
 app.post('/api/room/:id/room-action/:action', async (req, res) => {
   const { id, action } = req.params;
   const { userId, data } = req.body;
-  const roomMatch = rooms.get(id.toLowerCase());
+  const roomMatch = rooms.get(id);
   if (roomMatch) {
     const actionRes = await roomMatch.doRoomAction(userId, action, data);
     return res.json({
@@ -140,7 +127,7 @@ app.post('/api/room/:id/room-action/:action', async (req, res) => {
 app.post('/api/room/:id/game-action/:action', async (req, res) => {
   const { id, action } = req.params;
   const { userId, data } = req.body;
-  const roomMatch = rooms.get(id.toLowerCase());
+  const roomMatch = rooms.get(id);
   if (roomMatch) {
     const actionRes = await roomMatch.doGameAction(userId, action, data);
     return res.json({
@@ -153,6 +140,16 @@ app.post('/api/room/:id/game-action/:action', async (req, res) => {
   }
   return res.status(404).json({ success: false });
 });
+
+
+
+// STATIC SITE
+app.use(express.static('dist'));
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist/index.html'));
+});
+
+
 
 // error handler
 app.use(function (err, req, res, next) {

@@ -13,17 +13,16 @@ export default class GameRoom {
   lostConnections = new Map();
   hostUserId!: string;
 
-  constructor(id: string, hostUserData?: any) {
+  constructor(id: string) {
     this.id = id;
     this.createHostUser();
   }
 
-  private createHostUser(hostUserData: any = {}) {
+  private createHostUser() {
     const host = this.registerNewUser({
       username: 'Host',
       isHost: true,
       isPlayer: true,
-      ...hostUserData
     });
     this.hostUserId = host.id;
     return host;
@@ -37,16 +36,16 @@ export default class GameRoom {
     });
   }
 
-  public rejoinUser(userData) {
-    const existingUser = this.users.get(userData.id);
+  public joinUser(returningUserId = '') {
+    const existingUser = this.users.get(returningUserId);
     if (existingUser) {
       existingUser.connection.ping();
-      return this.users.get(userData.id);
+      return this.users.get(returningUserId);
     }
-    return this.registerNewUser(userData);
+    return this.registerNewUser();
   }
 
-  registerNewUser(userData) {
+  registerNewUser(userData = {}) {
     const newUserId = userIds.getNew();
     const newUser = {
       id: newUserId,

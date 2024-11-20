@@ -39,7 +39,7 @@ export default {
 
   async mounted() {
     this.customDecks = JSON.parse(localStorage.getItem('customWordDecks') || '{}');
-    this.joinUrl = this.hostUrl.origin + "/" + this.gameStore.gameRoomId!.toUpperCase();
+    this.joinUrl = this.hostUrl.origin + "/" + this.gameStore.gameRoomId!;
     this.joinUrlQr = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(this.joinUrl);
 
     this.notificationsOn = this.appStore.hasNotificationPermission;

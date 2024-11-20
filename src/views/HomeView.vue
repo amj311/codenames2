@@ -12,20 +12,42 @@ export default {
       activeMenu: 'new',
       newGameMode: 'party',
       roomToJoin: '',
-      cache: null,
+      joinedGamesCache: {},
+      joinRoomError: null
     })
   },
 
   computed: {
     ...mapStores(useGameStore),
+    joinedGames() {
+      return Object.values(this.joinedGamesCache) as any[];
+    }
   },
 
   mounted() {
-    this.cache = this.gameStore.getCache();
+    this.loadAndCheckSavedGames();
   },
 
   methods: {
+    async loadAndCheckSavedGames() {
+      const joinedGamesCache = this.gameStore.getJoinedGames();
+      for (const gameRoomId in joinedGamesCache) {
+        try {
+          await api.get('/room/' + gameRoomId);
+        }
+        catch (err: any) {
+          // delete room if server tells us it doesn't exist
+          if (err.response.status === 404) {
+            delete joinedGamesCache[gameRoomId];
+            this.gameStore.deleteJoinedGame(gameRoomId);
+          }
+        }
+      }
+      this.joinedGamesCache = joinedGamesCache;
+    },
+
     openMenu(menu) {
+      this.joinRoomError = null;
       this.showMenu = true;
       this.activeMenu = menu;
       setTimeout(() => this.$refs.roomToJoin.focus(), 100);
@@ -35,18 +57,22 @@ export default {
     },
     async startGame() {
       try {
-        const { data } = await api.post('/room/new');
-        this.gameStore.setUser(data.hostUser);
-        this.gameStore.loadGameRoom(data.rid);
-        this.$router.push('/play');
+        const newRoomId = await this.gameStore.newGame();
+        this.$router.push('/' + newRoomId);
       }
       catch (err) {
         console.error(err);
       }
     },
-    async joinGame() {
-      await this.gameStore.joinGame(this.roomToJoin);
-      this.$router.push('/play');
+    async joinGame(rid) {
+      try {
+        await this.gameStore.joinGame(rid);
+        this.$router.push('/' + rid);
+      }
+      catch (err) {
+        console.error(err);
+        this.joinRoomError = err;
+      }
     }
   }
 }
@@ -78,15 +104,18 @@ export default {
                 class="ui-raised ui-pressable ui-shiny"
               >Join a Game</button>
             </div>
-            <div v-if="cache?.gameRoomId">
-              <br />
+            <br />
+            <div
+              v-for="game in joinedGames"
+              :key="game.gameRoomId"
+            >
               <button
-                @click="() => $router.push('/play')"
+                @click="() => joinGame(game.gameRoomId)"
                 class="button text"
               >
                 <i class="material-icons">login</i>
                 &nbsp;
-                Return to {{ cache?.gameRoomId.toUpperCase() }}
+                Return to {{ game.gameRoomId }}
               </button>
             </div>
           </div>
@@ -101,7 +130,7 @@ export default {
             class="ui-block"
           >
             <form
-              @submit.prevent="joinGame"
+              @submit.prevent="() => joinGame(roomToJoin)"
               id="joinMenu"
             >
               <div style="display: flex; align-items: center;">
@@ -127,6 +156,13 @@ export default {
                   :disabled="roomToJoin.length < 5"
                   class="ui-pressable ui-shiny ui-raised"
                 >GO!</button>
+              </div>
+              <div
+                v-if="joinRoomError"
+                class="error"
+                style="margin-top: 1em; color: red;"
+              >
+                Failed to join {{ roomToJoin }}
               </div>
             </form>
           </div>

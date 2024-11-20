@@ -6,8 +6,7 @@ import SwapView from '@/components/SwapView.vue';
 import { useGameStore } from '@/stores/game.store';
 import GameSetupView from './GameSetupView.vue';
 import GamePlayView from './GamePlayView.vue';
-import { computed, ref } from 'vue';
-import api from '@/services/api';
+import { computed, ref, watch } from 'vue';
 import { useRouter, RouterLink } from 'vue-router';
 
 const router = useRouter();
@@ -21,30 +20,36 @@ const Views = {
 
 const gameStore = useGameStore();
 const roomIsClosed = ref(false);
-const cachedRoomId = ref(null);
 
 const currentView = computed(() => {
   if (roomIsClosed.value) return Views.Closed;
   if (gameStore.user && gameStore.gameState) {
-    if (!gameStore.user.username && !showUsernameModal.value) {
-      openUsernameModal();
-    }
     if (gameStore.gameState.state.isInPlay) {
       return Views.Play;
     }
     return Views.Setup;
   }
-  attemptRejoinRoom();
+  attemptJoinRoom();
   return Views.Loading;
 })
 
-async function attemptRejoinRoom() {
-  const cache = gameStore.getCache();
-  if (!cache || !cache.gameRoomId || !cache.user) return;
+watch(computed(() => gameStore.gameState?.user), () => {
+  if (gameStore.gameState?.user && !gameStore.user.username && !showUsernameModal.value) {
+    console.log("detected missing user name", gameStore.gameState?.user);
+    openUsernameModal();
+  }
+});
+
+async function attemptJoinRoom() {
+  const rid = router.currentRoute.value.params.rid;
+
+  if (!rid || typeof rid !== 'string') {
+    router.push('/');
+    return;
+  }
 
   try {
-    cachedRoomId.value = cache.gameRoomId;
-    await gameStore.rejoinRoom(cache.gameRoomId, cache.user);
+    await gameStore.joinGame(rid);
     roomIsClosed.value = false;
   }
   catch (err) {
@@ -59,8 +64,7 @@ async function promptLeaveRoom() {
 }
 
 async function leaveRoom() {
-  await gameStore.doRoomAction('leaveRoom');
-  gameStore.clear();
+  await gameStore.leaveGameRoom(router.currentRoute.value.params.rid);
   router.push('/');
 }
 
@@ -179,7 +183,8 @@ async function saveUsername() {
             style="display: inline-block; text-align: center;"
           >
             <h3>
-              Sorry, room <span style="text-transform: uppercase;">{{ cachedRoomId }}</span> is not
+              Sorry, room <span style="text-transform: uppercase;">{{ router.currentRoute.value.params.rid }}</span> is
+              not
               available.
             </h3>
             <button
