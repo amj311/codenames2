@@ -58,7 +58,7 @@ export default {
     canFlip() {
       return (
         this.user.isHost ||
-        this.roomState.users.length <= 2 ||
+        this.gameStore.roomState?.users.length <= 2 ||
         (this.userCaptainOfTeam && this.gameState.state.canRevealCard && this.gameState.teamOfTurn?.id === this.userCaptainOfTeam.id)
       )
     },
