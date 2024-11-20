@@ -57,7 +57,7 @@ export default {
     <div style="text-align: center;">
       <img
         id="logo"
-        src="@/assets/logos/ai1.png"
+        src="@/assets/logos/ai1-web.png"
       />
       <div
         id="slideContainer"
