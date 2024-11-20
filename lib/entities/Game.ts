@@ -1,9 +1,11 @@
-import { CardSuites } from '../constants.js';
+import { AI_CODEMASTER, CardSuites } from '../constants.js';
 import { RevealCardResponse } from '../server/dto/RevealCard.js'
+import { AiService } from '../services/AiService.js';
 import GenerateCardsService from '../services/GenerateCardsService.js'
 import Card from './Card.js';
 import { GameStates } from './GameStates.js'
 import Team from './Team.js'
+
 
 const defaultConfig = {
   mode: 'classic',
@@ -26,6 +28,7 @@ export default class Game {
   public numMatchesFound: number = 0;
   public hintOfTurn = '';
   public numHintMatches: 0;
+  public turnCounter = 0;
 
   private usingCustomWords = '';
 
@@ -45,6 +48,7 @@ export default class Game {
       numMatchesFound: this.numMatchesFound,
       hintOfTurn: this.hintOfTurn,
       numHintMatches: this.numHintMatches,
+      turnCounter: this.turnCounter
     }
   }
 
@@ -105,13 +109,11 @@ export default class Game {
           game.config,
           game.usingCustomWords
         );
-        game.state = GameStates.turnPrep;
-        if (game.config.mode === 'high score') {
-          game.teamOfTurn = game.teams.teamOne;
+        let firstTeamId = game.teams.teamOne.id;
+        if (game.config.numTeams > 1) {
+          firstTeamId = Math.random() > (1 / game.config.numTeams) ? game.teams.teamTwo.id : game.teams.teamOne.id;
         }
-        else {
-          game.teamOfTurn = Math.random() > 0.5 ? game.teams.teamTwo : game.teams.teamOne;
-        }
+        game.startTeamTurn(firstTeamId);
       },
 
       endGame() {
@@ -180,12 +182,12 @@ export default class Game {
         return new RevealCardResponse(card, cardBelongsToTeamOfTurn, game)
       },
 
-      advanceTurn() {
+      async advanceTurn() {
+        let nextTeamId = game.teams.teamOne.id;
         if (game.config.mode === 'classic') {
-          game.teamOfTurn = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo : game.teams.teamOne;
+          nextTeamId = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo.id : game.teams.teamOne.id;
         }
-        game.numMatchesFound = 0;
-        game.state = GameStates.turnPrep;
+        game.startTeamTurn(nextTeamId);
       },
 
       resetGame() {
@@ -194,11 +196,30 @@ export default class Game {
         game.winner = null;
         game.winningCard = null;
         game.numMatchesFound = 0;
+        game.hintOfTurn = '';
+        game.numHintMatches = 0;
+        game.turnCounter = 0;
         game.state = GameStates.waitingToStart;
       }
     }
   }
 
+  startTeamTurn(teamId: string) {
+    console.log(teamId, this.teams)
+    this.teamOfTurn = this.teams[teamId];
+    this.numMatchesFound = 0;
+    this.turnCounter++;
+    this.hintOfTurn = '';
+    this.numHintMatches = 0;
+    this.state = GameStates.turnPrep;
+
+    if (this.teamOfTurn.captainId === AI_CODEMASTER) {
+      // allow this to complete asynchronously
+      this.attemptAiHint(this.teamOfTurn.id, this.turnCounter);
+    }
+
+    return;
+  }
 
 
   // setTeamCaptain(setAsCaptain, teamCode, user) {
@@ -228,5 +249,47 @@ export default class Game {
         team.captainId = null
       }
     }
+  }
+
+  canContinueAiHint(originalTeamId, originalTurnCounter) {
+    if (this.teamOfTurn?.id !== originalTeamId) return false;
+    if (!this.state.isInPlay) return false;
+    if (this.teamOfTurn?.captainId !== AI_CODEMASTER) return false;
+    if (this.turnCounter !== originalTurnCounter) return false;
+    return true;
+  }
+
+  async attemptAiHint(originalTeamId: string, originalTurnCounter: number) {
+    if (!this.canContinueAiHint(originalTeamId, originalTurnCounter)) return;
+    try {
+      const hint = await this.getHintFromAi();
+      if (!this.canContinueAiHint(originalTeamId, originalTurnCounter)) return;
+      if (!hint) return;
+      this.actions.startTurn(null, { hint: hint.hint, numHintMatches: hint.matchingWords.length });
+    }
+    catch (e) {
+      console.error("Error getting AI hint");
+      console.log(e);
+    }
+  }
+
+  async getHintFromAi() {
+    if (!this.teamOfTurn || !this.state.isInPlay) return;
+    const { teamCards, opposingCards } = this.cards.reduce(
+      (res, c) => {
+        if (!c.revealed && c.suiteId === this.teamOfTurn!.id) {
+          res.teamCards.push(c);
+        }
+        else {
+          res.opposingCards.push(c);
+        }
+        return res;
+      },
+      { teamCards: [], opposingCards: [] },
+    );
+
+    const { success, response } = await AiService.getHint(teamCards.map(c => c.word), opposingCards.map(c => c.word));
+    if (!success) return;
+    return response;
   }
 }

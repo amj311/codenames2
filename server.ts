@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import bodyParser from 'body-parser';
 const { json, urlencoded } = bodyParser;
 import GameRoom from './lib/server/GameRoom';
@@ -163,3 +166,4 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.send(err);
 });
+
