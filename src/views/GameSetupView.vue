@@ -298,10 +298,7 @@ export default {
                 :class="`bg-ninja-${appStore.teamImgs[teamCode] + (gameState.teams[teamCode].captainId === AI_CODEMASTER ? '-ai' : '')}`"
                 width="50"
               />
-              <div
-                v-if="gameState.teams[teamCode].captainId"
-                :style="{ display: 'flex', 'align-items': 'bottom' }"
-              >
+              <div v-if="gameState.teams[teamCode].captainId">
                 <span>{{ gameState.teams[teamCode].captainId === AI_CODEMASTER ? 'AI Codemaster' :
                   gameStore.getUserById(gameState.teams[teamCode].captainId).username }}</span>
                 <span
@@ -310,7 +307,6 @@ export default {
                     || user.isHost"
                   class="remove-captain"
                   @click.stop="() => removeTeamCaptain(teamCode)"
-                  :style="{ display: 'flex', 'align-items': 'center' }"
                 >
                   <i class="material-icons">cancel</i>
                 </span>
@@ -608,7 +604,7 @@ div#teamLists {
   align-items: flex-start;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 .team-caption-option {
@@ -618,6 +614,8 @@ div#teamLists {
   align-items: center;
   font-size: .8em;
   user-select: none;
+  width: 11em;
+  text-align: center;
 }
 
 .team-caption-option.no-captain:not(.is-captain) {
@@ -649,12 +647,11 @@ div#teamLists {
   opacity: .75;
 } */
 
-.team-caption-option .remove-captain {
-  position: absolute;
-  right: 0;
+.team-caption-option .remove-captain i {
   pointer-events: all;
   cursor: pointer;
-  padding: 0 .5em;
+  vertical-align: bottom;
+  padding-left: .5em;
 }
 
 
