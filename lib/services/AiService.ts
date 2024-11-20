@@ -29,7 +29,7 @@ You have already chosen this hint:
 ${hint}
 
 
-No, please select one or more words that are VERY STRONGLY related to the hint.
+Now, please select one or more words that are VERY STRONGLY related to the hint.
 
 Here is the list of our team's words:
 ${teamWords.join("\n")}
@@ -37,13 +37,16 @@ ${teamWords.join("\n")}
 
 Please return ONLY a JSON formatted object with these properties:
 {
-  "matchingWords": [ "word1", ... ]
+  "matchingWords": string[]
 }
 `;
 
 async function promptAi(prompt) {
   let response;
   let success = false;
+
+  console.log("\nPrompting AI...")
+  console.log(prompt)
 
   try {
     const { data } = await axios.post(

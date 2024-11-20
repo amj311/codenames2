@@ -1,7 +1,7 @@
 <script>
 // import Notification from "../utils/Notification"
 import { getCaptainsTeam } from "../../lib/services/GameHelpers"
-import { PlayableTeamIds, CardSuites } from "../../lib/constants"
+import { PlayableTeamIds, CardSuites, AI_CODEMASTER } from "../../lib/constants"
 import Card from '../components/Card.vue'
 import { mapStores } from "pinia";
 import { useGameStore } from "@/stores/game.store";
@@ -18,6 +18,7 @@ export default {
       newHint: "",
       newHintMatches: 0,
       CardSuites,
+      AI_CODEMASTER,
     }
   },
 
@@ -96,6 +97,11 @@ export default {
     initAdvanceTurn() {
       this.gameStore().doGameAction('advanceTurn', {})
     },
+
+    retryAiHint() {
+      this.gameStore().doGameAction('retryAiHint', {})
+    },
+
     async startTurn() {
       if (!this.newHint || !this.newHintMatches) {
         alert("Please enter a hint and how many words it matches!");
@@ -203,7 +209,32 @@ export default {
               START TURN
             </button>
           </div>
-          <div v-else>Waiting for hint...</div>
+          <div v-else>
+            <div v-if="gameState.aiHintFailure">
+              <h3 style="display: inline-flex; align-items: center; gap: .5em;">
+                <i class="material-icons-outlined">
+                  smart_toy
+                </i>
+                Oops!
+              </h3>
+              <div> AI failed to generate a hint.</div>
+              <div>
+                <button @click="retryAiHint">Try again</button>
+              </div>
+            </div>
+            <h3
+              v-else
+              style="display: flex; align-items: center; gap: .5em;"
+            >
+              <i
+                v-if="gameState.teamOfTurn.captainId === AI_CODEMASTER"
+                class="material-icons-outlined"
+              >
+                smart_toy
+              </i>
+              Waiting for hint...
+            </h3>
+          </div>
         </div>
         <div
           id="winnerMsg"
