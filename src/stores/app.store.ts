@@ -9,5 +9,53 @@ export const useAppStore = defineStore('app', () => {
     assassin: 'black',
   };
 
-  return { teamImgs }
+  const hasNotificationPermission = ref(Notification?.permission === 'granted');
+
+  function canNotification() {
+    if ('Notification' in window) {
+      return true;
+    }
+    console.log('This browser does not support desktop notification');
+    return false;
+  }
+
+  function canRequestNotification() {
+    if (!canNotification()) return false;
+    return Notification.permission !== 'denied';
+  }
+
+  async function askNotificationPermission() {
+    if (!canNotification()) return;
+    const permission = await Notification.requestPermission();
+    const granted = permission === 'granted';
+    hasNotificationPermission.value = granted;
+    return granted;
+  }
+
+  function notify(title, options) {
+    if (!document.hidden || !hasNotificationPermission.value) {
+      console.log('Choosing not to display notification');
+      return;
+    };
+
+    const notification = new Notification(title, {
+      icon: '/blue.png',
+      ...options,
+    });
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    }
+  }
+
+
+  return {
+    teamImgs,
+    hasNotificationPermission,
+    get canRequestNotification() {
+      return canRequestNotification();
+    },
+    askNotificationPermission,
+    notify,
+  }
 })

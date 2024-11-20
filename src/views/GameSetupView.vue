@@ -33,6 +33,7 @@ export default {
       hostUrl: new URL(window.location.href),
       joinUrl: '',
       joinUrlQr: '',
+      notificationsOn: false,
     })
   },
 
@@ -40,108 +41,10 @@ export default {
     this.customDecks = JSON.parse(localStorage.getItem('customWordDecks') || '{}');
     this.joinUrl = this.hostUrl.origin + "/" + this.gameStore.gameRoomId!.toUpperCase();
     this.joinUrlQr = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(this.joinUrl);
+
+    this.notificationsOn = this.appStore.hasNotificationPermission;
   },
 
-  watch: {
-    gameConfig(val) {
-      this.externalUpdate = true;
-      this.tmpConfig = { ...val };
-      this.$nextTick(() => {
-        this.externalUpdate = false;
-      })
-    },
-
-    configTrigger() {
-      if (this.externalUpdate) return;
-      this.updateTeamCardsByAvailableSpace();
-    },
-
-    customDecksTrigger() {
-      localStorage.setItem('customWordDecks', JSON.stringify(this.customDecks));
-      this.pushTmpConfig();
-    }
-  },
-
-
-  methods: {
-    async pushTmpConfig(config?) {
-      try {
-        await this.gameStore.doGameAction('configure', {
-          config: config || this.tmpConfig,
-          customWords: this.selectedCustomWords,
-        });
-      }
-      catch (err) {
-        console.error(err);
-      }
-    },
-
-    async claimCaptain(teamCode) {
-      try {
-        await this.gameStore.doGameAction('makeUserCaptain', {
-          userId: this.user.id,
-          teamCode,
-        });
-      }
-      catch (err) {
-        console.error(err);
-      }
-    },
-
-    async makeAiCaptain(teamCode) {
-      try {
-        await this.gameStore.doGameAction('makeUserCaptain', {
-          userId: AI_CODEMASTER,
-          teamCode,
-        });
-      }
-      catch (err) {
-        console.error(err);
-      }
-    },
-
-    async removeTeamCaptain(teamCode) {
-      try {
-        await this.gameStore.doGameAction('removeTeamCaptain', {
-          teamCode,
-        });
-      }
-      catch (err) {
-        console.error(err);
-      }
-    },
-
-    startGame() {
-      if (this.canStartGame) {
-        this.gameStore.doGameAction('startGame');
-      }
-    },
-
-    updateTeamCardsByAvailableSpace() {
-      const newConfig = { ...this.tmpConfig };
-      newConfig.numAssassins = minmax(this.tmpConfig.numAssassins, 1, 3);
-      newConfig.numTeamCards = minmax(this.tmpConfig.numTeamCards, 1, this.maxCompTeamQty);
-      this.pushTmpConfig(newConfig);
-    },
-
-    openCustomDeckModal(deckData?) {
-      this.tmpCustomDeck.name = deckData?.name || '';
-      this.tmpCustomDeck.wordsTxt = deckData?.wordsTxt || '';
-      this.showCustomDeckModal = true;
-    },
-
-    saveCustomDeck() {
-      if (!this.tmpCustomDeck.name) return;
-      if (!this.tmpCustomDeck.wordsTxt) return;
-      this.customDecks[this.tmpCustomDeck.name] = this.tmpCustomDeck;
-      this.showCustomDeckModal = false;
-    },
-
-    deleteCustomDeck(name) {
-      delete this.customDecks[name];
-      this.showCustomDeckModal = false;
-    },
-  },
 
   computed: {
     ...mapStores(useGameStore, useAppStore),
@@ -243,7 +146,119 @@ export default {
     customDecksTrigger() {
       return JSON.stringify(this.customDecks);
     }
-  }
+  },
+
+  watch: {
+    gameConfig(val) {
+      this.externalUpdate = true;
+      this.tmpConfig = { ...val };
+      this.$nextTick(() => {
+        this.externalUpdate = false;
+      })
+    },
+
+    configTrigger() {
+      if (this.externalUpdate) return;
+      this.updateTeamCardsByAvailableSpace();
+    },
+
+    customDecksTrigger() {
+      localStorage.setItem('customWordDecks', JSON.stringify(this.customDecks));
+      this.pushTmpConfig();
+    }
+  },
+
+
+  methods: {
+    async pushTmpConfig(config?) {
+      try {
+        await this.gameStore.doGameAction('configure', {
+          config: config || this.tmpConfig,
+          customWords: this.selectedCustomWords,
+        });
+      }
+      catch (err) {
+        console.error(err);
+      }
+    },
+
+    async claimCaptain(teamCode) {
+      try {
+        await this.gameStore.doGameAction('makeUserCaptain', {
+          userId: this.user.id,
+          teamCode,
+        });
+      }
+      catch (err) {
+        console.error(err);
+      }
+    },
+
+    async makeAiCaptain(teamCode) {
+      try {
+        await this.gameStore.doGameAction('makeUserCaptain', {
+          userId: AI_CODEMASTER,
+          teamCode,
+        });
+      }
+      catch (err) {
+        console.error(err);
+      }
+    },
+
+    async removeTeamCaptain(teamCode) {
+      try {
+        await this.gameStore.doGameAction('removeTeamCaptain', {
+          teamCode,
+        });
+      }
+      catch (err) {
+        console.error(err);
+      }
+    },
+
+    startGame() {
+      if (this.canStartGame) {
+        this.gameStore.doGameAction('startGame');
+      }
+    },
+
+    updateTeamCardsByAvailableSpace() {
+      const newConfig = { ...this.tmpConfig };
+      newConfig.numAssassins = minmax(this.tmpConfig.numAssassins, 1, 3);
+      newConfig.numTeamCards = minmax(this.tmpConfig.numTeamCards, 1, this.maxCompTeamQty);
+      this.pushTmpConfig(newConfig);
+    },
+
+    openCustomDeckModal(deckData?) {
+      this.tmpCustomDeck.name = deckData?.name || '';
+      this.tmpCustomDeck.wordsTxt = deckData?.wordsTxt || '';
+      this.showCustomDeckModal = true;
+    },
+
+    saveCustomDeck() {
+      if (!this.tmpCustomDeck.name) return;
+      if (!this.tmpCustomDeck.wordsTxt) return;
+      this.customDecks[this.tmpCustomDeck.name] = this.tmpCustomDeck;
+      this.showCustomDeckModal = false;
+    },
+
+    deleteCustomDeck(name) {
+      delete this.customDecks[name];
+      this.showCustomDeckModal = false;
+    },
+
+    async requestNotifications() {
+      try {
+        const granted = await this.appStore.askNotificationPermission();
+        this.notificationsOn = granted || false;
+      }
+      catch (err) {
+        console.error(err);
+      }
+    }
+  },
+
 }
 </script>
 
@@ -445,20 +460,27 @@ export default {
       </div>
     </div>
 
+    <button
+      v-if="!notificationsOn && appStore.canRequestNotification"
+      @click="requestNotifications"
+      class="text"
+      style="display: flex; align-items: center; gap: .5em; user-select: none; margin-top: .5rem;"
+    >
+      <i class="material-icons">notifications</i>
+      Get notifications for this game
+    </button>
 
-    <div id="bottomBar">
-      <div>
-        <button
-          id="play"
-          v-if="canStartGame"
-          class="inline ui-pressable ui-shiny ui-raised"
-          @click="startGame"
-        >PLAY!</button>
-        <div
-          v-else
-          style="text-align:right; font-size:.8em; font-weight:bold"
-        >Waiting for codemasters...</div>
-      </div>
+    <div id="playAction">
+      <button
+        id="play"
+        v-if="canStartGame"
+        class="inline ui-pressable ui-shiny ui-raised"
+        @click="startGame"
+      >PLAY!</button>
+      <div
+        v-else
+        style="text-align:right; font-size:.8em; font-weight:bold"
+      >Waiting for codemasters...</div>
     </div>
   </div>
 
@@ -655,7 +677,8 @@ div#teamLists {
 }
 
 
-#bottomBar {
+
+#playAction {
   font-size: 1.25em;
   display: flex;
   align-items: center;
@@ -664,7 +687,7 @@ div#teamLists {
   min-height: 8rem;
 }
 
-#bottomBar>div {
+#playAction>* {
   animation: pulse 500ms infinite alternate;
 }
 

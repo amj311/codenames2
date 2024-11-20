@@ -5,6 +5,7 @@ import { PlayableTeamIds, CardSuites, AI_CODEMASTER } from "../../lib/constants"
 import Card from '../components/Card.vue'
 import { mapStores } from "pinia";
 import { useGameStore } from "@/stores/game.store";
+import { useAppStore } from "@/stores/app.store";
 
 export default {
   components: {
@@ -13,7 +14,6 @@ export default {
 
   data() {
     return {
-      ...mapStores(useGameStore),
       preventPlay: false,
       newHint: "",
       newHintMatches: 0,
@@ -30,8 +30,9 @@ export default {
   },
 
   computed: {
+    ...mapStores(useGameStore, useAppStore),
     gameState() {
-      return this.gameStore().gameState;
+      return this.gameStore.gameState;
     },
     gameConfig() {
       return this.gameState.config;
@@ -40,7 +41,7 @@ export default {
       return JSON.stringify(this.tmpConfig);
     },
     user() {
-      return this.gameStore().user;
+      return this.gameStore.user;
     },
     userCaptainOfTeam() {
       return getCaptainsTeam(this.user, this.gameState.teams);
@@ -69,7 +70,13 @@ export default {
     },
     numCardsRemainingForTeamOfTurn() {
       return this.gameState.cards.filter(c => c.suiteId === this.gameState.teamOfTurn.id && !c.revealed).length;
-    }
+    },
+
+    notificationTrigger() {
+      return JSON.stringify({
+        state: this.gameState.state,
+      });
+    },
   },
 
   methods: {
@@ -95,11 +102,11 @@ export default {
     },
 
     initAdvanceTurn() {
-      this.gameStore().doGameAction('advanceTurn', {})
+      this.gameStore.doGameAction('advanceTurn', {})
     },
 
     retryAiHint() {
-      this.gameStore().doGameAction('retryAiHint', {})
+      this.gameStore.doGameAction('retryAiHint', {})
     },
 
     async startTurn() {
@@ -107,7 +114,7 @@ export default {
         alert("Please enter a hint and how many words it matches!");
         return;
       };
-      await this.gameStore().doGameAction('startTurn', {
+      await this.gameStore.doGameAction('startTurn', {
         hint: this.newHint,
         numHintMatches: this.newHintMatches,
       });
@@ -115,6 +122,31 @@ export default {
       this.newHint = "";
       this.newHintMatches = 0;
     },
+  },
+
+  watch: {
+    notificationTrigger() {
+      // alert codemaster their turn is starting
+      if (
+        this.gameState.state.name === 'turnPrep' &&
+        this.userCaptainOfTeam &&
+        this.gameState.teamOfTurn?.id === this.userCaptainOfTeam.id
+      ) {
+        this.appStore.notify("Time to give your team a hint!");
+      }
+
+      // alert player of a new hint
+      if (this.gameState.state.name === 'guessing') {
+        this.appStore.notify("The next hint is ready - time to guess!");
+      }
+
+      // alert everyone to game end
+      if (this.gameState.state.isGameOver) {
+        this.appStore.notify("Game over!", {
+          body: "See who won"
+        });
+      }
+    }
   }
 }
 </script>
