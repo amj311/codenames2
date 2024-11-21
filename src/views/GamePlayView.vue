@@ -19,6 +19,7 @@ export default {
       newHintMatches: 0,
       CardSuites,
       AI_CODEMASTER,
+      showAiHintsLog: false,
     }
   },
 
@@ -60,7 +61,7 @@ export default {
     canFlip() {
       return (
         this.gameStore.isHost ||
-        this.gameStore.config.numTeams === 1 ||
+        this.gameState.config.numTeams === 1 ||
         (this.userCaptainOfTeam && this.gameState.state.canRevealCard && this.gameState.teamOfTurn?.id === this.userCaptainOfTeam.id)
       )
     },
@@ -247,19 +248,28 @@ export default {
           id="winnerMsg"
           v-else-if="gameState.state.isGameOver"
         >
-          <div
-            v-if="gameState.config.mode === 'classic'"
-            class="ui-raised ui-shiny"
-            :style="`text-align: center; margin: 0 auto; background-color: ${gameState.winner ? gameState.winner.color : gameState.teams.bystander.color}; color: #fff; padding: .5em 1em; border-radius: 5px; font-size:1.2em`"
-          >
-            {{ gameState.winner ? gameState.winner.name + " Wins!" : "DRAW!" }}
+          <div style="display: flex; justify-content: center">
+            <div
+              v-if="gameState.config.mode === 'classic'"
+              class="ui-raised ui-shiny"
+              :style="`text-align: center; margin: 0 auto; background-color: ${gameState.winner ? gameState.winner.color : gameState.teams.bystander.color}; color: #fff; padding: .5em 1em; border-radius: 5px; font-size:1.2em`"
+            >
+              {{ gameState.winner ? gameState.winner.name + " Wins!" : "DRAW!" }}
+            </div>
+            <div
+              v-else-if="gameState.config.mode === 'high score'"
+              class="ui-raised ui-shiny"
+              :style="`text-align: center; margin: 0 auto; background-color: ${gameState.winner ? gameState.winner.color : CardSuites.assassin.color}; color: #fff; padding: .5em 1em; border-radius: 5px; font-size:1.2em`"
+            >
+              {{ gameState.winner ? gameState.winner.name + " Wins!" : "GAME OVER" }}
+            </div>
           </div>
-          <div
-            v-else-if="gameState.config.mode === 'high score'"
-            class="ui-raised ui-shiny"
-            :style="`text-align: center; margin: 0 auto; background-color: ${gameState.winner ? gameState.winner.color : CardSuites.assassin.color}; color: #fff; padding: .5em 1em; border-radius: 5px; font-size:1.2em`"
-          >
-            {{ gameState.winner ? gameState.winner.name + " Wins!" : "GAME OVER" }}
+          <div v-if="gameState.aiHintLog.length > 0">
+            <br />
+            <button
+              class="text"
+              @click="showAiHintLog = !showAiHintLog"
+            ><i class="material-icons-outlined">smart_toy</i> Explain AI hints</button>
           </div>
         </div>
       </div>
@@ -292,6 +302,44 @@ export default {
           <!-- Just here for spacing -->
         </div>
         <div style="display: flex; justify-content: flex-end;">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div
+    class="modal-overlay"
+    v-if="showAiHintLog"
+    @click="showAiHintLog = false"
+  >
+    <div
+      class="ui-block"
+      id="aiHintsLog"
+      style="max-width: 50rem"
+    >
+      <h3 style="display: flex; align-items: center; justify-content: space-between;">
+        AI Hints Explanation
+        <button
+          class="text"
+          @click="showAiHintLog = false"
+        >
+          <i class="material-icons-outlined">close</i>
+        </button>
+      </h3>
+      <div style="max-height: 60vh;  overflow: auto;">
+        <div
+          v-for="aiHint in gameState.aiHintLog"
+          :key="aiHint.id"
+          style="margin-top: 1em;"
+        >
+          <div>
+            <span style="font-weight: bold;">{{ aiHint.hint }}:</span>
+            {{ aiHint.matchingWords.join(', ') }}
+          </div>
+          <div>
+            {{ aiHint.explanation }}
+          </div>
         </div>
       </div>
 
@@ -381,8 +429,7 @@ div#playArea {
   box-sizing: border-box;
 }
 
-div#duringTurn,
-div#winnerMsg {
+div#duringTurn {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -519,4 +566,12 @@ div#bottomBar>div {
     display: inline-block;
   }
 }
+
+
+
+
+
+
+
+#aiHintsLog {}
 </style>

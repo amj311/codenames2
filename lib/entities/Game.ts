@@ -20,7 +20,7 @@ export default class Game {
   public config = defaultConfig;
   public state = GameStates.waitingToStart;
   public teams!: Record<string, Team>;
-  public cards: any[] = [];
+  public cards: Card[] = [];
 
   public teamOfTurn: Team | null = null;
   public hintOfTurn = '';
@@ -28,9 +28,15 @@ export default class Game {
   public numMatchesFound: number = 0;
   public turnCount = 0;
   public winner: Team | null = null;
-  public winningCard: any = null;
+  public winningCard: Card | null = null;
 
   public aiHintFailure = false;
+  public aiHintLog = [] as {
+    hint: string,
+    matchingWords: string[],
+    explanation: string
+    teamId: string
+  }[];
 
   private usingCustomWords = '';
   private aiHintCount = 0;
@@ -53,6 +59,7 @@ export default class Game {
       numHintMatches: this.numHintMatches,
       turnCount: this.turnCount,
       aiHintFailure: this.aiHintFailure,
+      aiHintLog: this.aiHintLog,
     }
   }
 
@@ -164,6 +171,7 @@ export default class Game {
         game.turnCount = 0;
         game.aiHintFailure = false;
         game.aiHintCount = 0;
+        game.aiHintLog = [];
         game.state = GameStates.waitingToStart;
       }
     }
@@ -253,7 +261,7 @@ export default class Game {
   }
 
   getCardById(id): Card {
-    return this.cards.find((c) => c.id == id)
+    return this.cards.find((c) => c.id == id)!
   }
 
   removePlayer(userId) {
@@ -281,13 +289,21 @@ export default class Game {
     const originalAiHintCount = this.aiHintCount;
     if (!this.canContinueAiHint(originalTeamId, originalTurnCount, originalAiHintCount)) return;
     try {
-      const { success, response: hint } = await this.getHintFromAi(previousHint);
+      const { success, response: hint } = await this.getHintFromAi(originalTeamId, previousHint);
       if (!this.canContinueAiHint(originalTeamId, originalTurnCount, originalAiHintCount)) return;
       if (!success) {
         this.aiHintFailure = true;
         return;
       };
-      this.actions.startTurn(null, { hint: hint.hint, numHintMatches: hint.matchingWords.length });
+      // Sometimes the AI disagrees with itself. In that case just send it as one match
+      const numMatches = Math.max(hint.matchingWords.length, 1);
+      this.actions.startTurn(null, { hint: hint.hint, numHintMatches: numMatches });
+      this.aiHintLog.push({
+        hint: hint.hint,
+        matchingWords: hint.matchingWords,
+        explanation: hint.explanation,
+        teamId: originalTeamId,
+      })
     }
     catch (e) {
       console.error("Error getting AI hint");
@@ -295,29 +311,29 @@ export default class Game {
     }
   }
 
-  async getHintFromAi(previousHint?: string, cntAttempts = 0) {
+  async getHintFromAi(forTeamId: string, previousHint?: string, cntAttempts = 0) {
     if (!this.teamOfTurn || !this.state.isInPlay) return { success: false, aborted: true };
 
     const { teamWords, opposingWords } = this.cards.reduce(
       (res, c) => {
-        if (!c.revealed && c.suiteId === this.teamOfTurn!.id) {
-          res.teamWords.push(c.word);
-        }
-        else {
-          res.opposingWords.push(c.word);
+        // We only need to consider cards which have not yet been flipped
+        // This allows greater flexibility as the game progresses
+        if (!c.revealed) {
+          if (c.suiteId === forTeamId) {
+            res.teamWords.push(c.word);
+          }
+          else {
+            res.opposingWords.push(c.word);
+          }
         }
         return res;
       },
-      { teamWords: [], opposingWords: [] },
+      { teamWords: [] as string[], opposingWords: [] as string[] },
     );
 
-    if (previousHint) {
-      opposingWords.push(previousHint);
-    }
-
-    const { success, response } = await AiService.getHint(teamWords, opposingWords);
+    const { success, response } = await AiService.getHint(teamWords, opposingWords, previousHint);
     if (!success && cntAttempts < 2) {
-      return await this.getHintFromAi(previousHint, cntAttempts + 1);
+      return await this.getHintFromAi(forTeamId, previousHint, cntAttempts + 1);
     };
     return {
       success, response
