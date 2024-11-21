@@ -91,7 +91,7 @@ app.post('/api/room/new', (req, res) => {
 });
 
 
-app.post('/api/room/:id/join', async (req, res) => {
+app.post('/api/room/:id/connect', async (req, res) => {
   const { id } = req.params;
   const { returningUserId } = req.body;
   const roomMatch = rooms.get(id);

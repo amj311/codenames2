@@ -1,6 +1,8 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
+let swRegistration;
+
 export const useAppStore = defineStore('app', () => {
   const teamImgs = {
     teamOne: 'blue',
@@ -40,14 +42,24 @@ export const useAppStore = defineStore('app', () => {
       return;
     };
 
-    const notification = new Notification(title, {
+    const finalOptions = {
       icon: '/blue.png',
+      badge: '/blue.png',
       ...options,
-    });
+    }
+
+    const notification = swRegistration ? swRegistration.showNotification(title, finalOptions) : new Notification(title, finalOptions);
     notification.onclick = () => {
       window.focus();
       notification.close();
     }
+  }
+
+  async function getSwSubscription() {
+    if (!swRegistration) {
+      swRegistration = await registerServiceWorker();
+    }
+    return await swRegistration?.pushManager.getSubscription();
   }
 
 
@@ -62,5 +74,32 @@ export const useAppStore = defineStore('app', () => {
     },
     askNotificationPermission,
     notify,
+    getSwSubscription,
   }
 })
+
+
+
+
+
+const check = () => {
+  if (!('serviceWorker' in navigator)) {
+    console.log('No Service Worker support!')
+    return false;
+  }
+  if (!('PushManager' in window)) {
+    console.log('No Push API Support!')
+    return false;
+  }
+  return true;
+}
+const registerServiceWorker = async () => {
+  swRegistration = await navigator.serviceWorker.register('serviceworker.js'); //notice the file name
+  return swRegistration;
+}
+
+const main = async () => { //notice I changed main to async function so that I can use await for registerServiceWorker
+  if (!check()) return;
+  swRegistration = await registerServiceWorker();
+}
+main();

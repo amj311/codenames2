@@ -11,21 +11,10 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
     },
-    // {
-    //   path: '/play',
-    //   name: 'play',
-    //   component: GameView,
-    // },
     {
       path: '/:rid',
       name: 'game',
       component: GameView,
-      // beforeEnter(to) {
-      //   if (to.params.rid && typeof to.params.rid === 'string') {
-      //     useGameStore().joinGame(to.params.rid as string);
-      //   }
-      //   return { name: 'home' }
-      // }
     },
   ],
 })

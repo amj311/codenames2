@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { PING_INTERVAL } from '../../lib/constants';
 import { getCaptainsTeam } from '../../lib/services/GameHelpers';
 import api from '@/services/api';
+import { useAppStore } from './app.store';
 
 export const useGameStore = defineStore('game', {
   state: () => ({
@@ -18,19 +19,19 @@ export const useGameStore = defineStore('game', {
     pingTimeout: null as any,
     lastSuccessfulAction: Date.now(),
     pingError: null as any,
+    hasSentSubscription: false,
   }),
   actions: {
     async newGame() {
       this.clear();
       const { data } = await api.post('/room/new');
       this.upsertJoinedGame({ gameRoomId: data.rid, userId: data.hostUser.id });
-      await this.joinGame(data.rid);
       return data.rid;
     },
 
-    async joinGame(rid: string) {
+    async connectToRoom(rid: string) {
       const returningUserId = this.getJoinedGame(rid)?.userId;
-      const { data } = await api.post('/room/' + rid + '/join', {
+      const { data } = await api.post('/room/' + rid + '/connect', {
         returningUserId,
       });
       this.clear();
@@ -58,7 +59,18 @@ export const useGameStore = defineStore('game', {
     },
     async doPing() {
       try {
-        await this.doRoomAction('pingUser');
+        const subscription = await useAppStore().getSwSubscription();
+        let subscriptionToSend;
+        if (subscription && !this.hasSentSubscription) {
+          subscriptionToSend = subscription;
+        }
+        await this.doRoomAction('pingUser', {
+          isActiveTab: !document.hidden,
+          pushSubscription: subscriptionToSend,
+        });
+        if (subscriptionToSend) {
+          this.hasSentSubscription = true;
+        }
         this.schedulePing();
       }
       catch (err) {

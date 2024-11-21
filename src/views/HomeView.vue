@@ -64,9 +64,9 @@ export default {
         console.error(err);
       }
     },
-    async joinGame(rid) {
+    async connectToRoom(rid) {
       try {
-        await this.gameStore.joinGame(rid);
+        // await this.gameStore.connectToRoom(rid);
         this.$router.push('/' + rid);
       }
       catch (err) {
@@ -110,7 +110,7 @@ export default {
               :key="game.gameRoomId"
             >
               <button
-                @click="() => joinGame(game.gameRoomId)"
+                @click="() => connectToRoom(game.gameRoomId)"
                 class="button text"
               >
                 <i class="material-icons">login</i>
@@ -130,7 +130,7 @@ export default {
             class="ui-block"
           >
             <form
-              @submit.prevent="() => joinGame(roomToJoin)"
+              @submit.prevent="() => connectToRoom(roomToJoin)"
               id="joinMenu"
             >
               <div style="display: flex; align-items: center;">

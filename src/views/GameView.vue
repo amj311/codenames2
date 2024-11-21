@@ -1,6 +1,6 @@
 <script
-  setup
-  lang="ts"
+	setup
+	lang="ts"
 >
 import SwapView from '@/components/SwapView.vue';
 import { useGameStore } from '@/stores/game.store';
@@ -12,76 +12,76 @@ import { useRouter, RouterLink } from 'vue-router';
 const router = useRouter();
 
 const Views = {
-  Closed: 'closed',
-  Loading: 'loading',
-  Setup: 'setup',
-  Play: 'play',
+	Closed: 'closed',
+	Loading: 'loading',
+	Setup: 'setup',
+	Play: 'play',
 };
 
 const gameStore = useGameStore();
 const roomIsClosed = ref(false);
 
 const currentView = computed(() => {
-  if (roomIsClosed.value) return Views.Closed;
-  if (gameStore.user && gameStore.gameState) {
-    if (gameStore.gameState.state.isInPlay) {
-      return Views.Play;
-    }
-    return Views.Setup;
-  }
-  return Views.Loading;
+	if (roomIsClosed.value) return Views.Closed;
+	if (gameStore.user && gameStore.gameState) {
+		if (gameStore.gameState.state.isInPlay) {
+			return Views.Play;
+		}
+		return Views.Setup;
+	}
+	return Views.Loading;
 })
 
 watch(computed(() => gameStore.user), () => {
-  if (gameStore.user && !gameStore.user.username && !showUsernameModal.value) {
-    openUsernameModal();
-  }
+	if (gameStore.user && !gameStore.user.username && !showUsernameModal.value) {
+		openUsernameModal();
+	}
 });
 
 onMounted(async () => {
-  attemptJoinRoom();
+	attemptJoinRoom();
 })
 
 async function attemptJoinRoom() {
-  const rid = router.currentRoute.value.params.rid;
+	const rid = router.currentRoute.value.params.rid;
 
-  if (!rid || typeof rid !== 'string') {
-    router.push('/');
-    return;
-  }
+	if (!rid || typeof rid !== 'string') {
+		router.push('/');
+		return;
+	}
 
-  try {
-    await gameStore.joinGame(rid);
-    roomIsClosed.value = false;
-  }
-  catch (err) {
-    roomIsClosed.value = true;
-  }
+	try {
+		await gameStore.connectToRoom(rid);
+		roomIsClosed.value = false;
+	}
+	catch (err) {
+		roomIsClosed.value = true;
+	}
 }
 
 
 async function promptLeaveRoom() {
-  if (!confirm("Are you sure you want to leave?")) return;
-  await leaveRoom();
+	if (!confirm("Are you sure you want to leave?")) return;
+	await leaveRoom();
 }
 
 async function leaveRoom() {
-  await gameStore.leaveGameRoom(router.currentRoute.value.params.rid);
-  router.push('/');
+	await gameStore.leaveGameRoom(router.currentRoute.value.params.rid);
+	router.push('/');
 }
 
 const userCanResetGame = computed(() => {
-  return (gameStore.user?.isHost || gameStore.userCaptainOfTeam)
-    && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver;
+	return (gameStore.isHost || gameStore.userCaptainOfTeam)
+		&& gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver;
 })
 
 async function resetGame() {
-  if (!confirm("Are you sure you want to reset this game?")) return;
-  await gameStore.doGameAction('resetGame');
+	if (!confirm("Are you sure you want to reset this game?")) return;
+	await gameStore.doGameAction('resetGame');
 }
 
 async function playAgain() {
-  await gameStore.doGameAction('resetGame');
+	await gameStore.doGameAction('resetGame');
 }
 
 
@@ -89,202 +89,203 @@ const showUsernameModal = ref(false);
 const tmpUsername = ref('');
 
 function openUsernameModal() {
-  tmpUsername.value = gameStore.user?.username;
-  showUsernameModal.value = true;
+	tmpUsername.value = gameStore.user?.username;
+	showUsernameModal.value = true;
 }
 
 async function saveUsername() {
-  try {
-    const data = {
-      username: tmpUsername.value,
-    };
-    await gameStore.doRoomAction('updateUserData', data);
-    showUsernameModal.value = false;
-  }
-  catch (err) {
-    console.error(err);
-  }
+	try {
+		const data = {
+			username: tmpUsername.value,
+		};
+		await gameStore.doRoomAction('updateUserData', data);
+		showUsernameModal.value = false;
+	}
+	catch (err) {
+		console.error(err);
+	}
 }
 
 </script>
 
 <template>
-  <div class="game-wrapper">
-    <div id="roomInfo">
-      <RouterLink to="/"><img
-          id="logo"
-          src="@/assets/logos/text.png"
-          style="width: 7rem"
-        /></RouterLink>
-      <template v-if="gameStore.gameState">
-        <div style="display: flex; flex-grow: 1; gap: 0rem">
-          <div id="roomCode">
-            <i class="material-icons">tap_and_play</i>
-            &nbsp;
-            <span class="code-cap">{{ gameStore.gameRoomId }}</span>
-          </div>
-          <div style="flex-grow: 1"></div>
-          <div
-            v-if="!gameStore.gameState.state.isInPlay"
-            @click="openUsernameModal"
-            class="button text"
-            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-          >
-            <i class="material-icons">person</i>&nbsp;
-            <span
-              class="user-username"
-              style="display: flex; align-items: center; justify-content: center;"
-            >
-              {{ gameStore.user?.username }}
-            </span>
-          </div>
-          <div
-            v-if="gameStore.gameState.config.mode === 'classic' && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
-            style="display: flex; align-items: center; font-weight: bold;"
-            :style="{ color: gameStore.gameState.teamOfTurn.color }"
-          >
-            {{ gameStore.gameState.teamOfTurn.name }}'s Turn
-          </div>
+	<div class="game-wrapper">
+		<div id="roomInfo">
+			<RouterLink to="/"><img
+					id="logo"
+					src="@/assets/logos/text.png"
+					style="width: 7rem"
+				/></RouterLink>
+			<template v-if="gameStore.gameState">
+				<div style="display: flex; flex-grow: 1; gap: 0rem">
+					<div id="roomCode">
+						<i class="material-icons">tap_and_play</i>
+						&nbsp;
+						<span class="code-cap">{{ gameStore.gameRoomId }}</span>
+					</div>
+					<div style="flex-grow: 1"></div>
+					<div
+						v-if="!gameStore.gameState.state.isInPlay"
+						@click="openUsernameModal"
+						class="button text"
+						style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
+					>
+						<i class="material-icons">person</i>&nbsp;
+						<span
+							class="user-username"
+							style="display: flex; align-items: center; justify-content: center;"
+						>
+							{{ gameStore.user?.username }}
+						</span>
+					</div>
+					<div
+						v-if="gameStore.gameState.config.mode === 'classic' && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
+						style="display: flex; align-items: center; font-weight: bold;"
+						:style="{ color: gameStore.gameState.teamOfTurn.color }"
+					>
+						{{ gameStore.gameState.teamOfTurn.name }}'s Turn
+					</div>
 
-          <div
-            v-if="userCanResetGame"
-            @click="resetGame"
-            class="button text"
-            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-          >
-            <i class="material-icons">replay</i>
-          </div>
-          <div
-            v-else-if="!gameStore.gameState.state.isGameOver"
-            @click="promptLeaveRoom"
-            class="button text"
-            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-          >
-            <i class="material-icons">logout</i>
-          </div>
-          <div
-            v-else-if="gameStore.gameState.state.isGameOver"
-            @click="playAgain"
-            class="button inline"
-            style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-          >
-            PLAY AGAIN
-          </div>
-        </div>
-      </template>
-    </div>
+					<div
+						v-if="userCanResetGame"
+						@click="resetGame"
+						class="button text"
+						style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
+					>
+						<i class="material-icons">replay</i>
+					</div>
+					<div
+						v-else-if="!gameStore.gameState.state.isGameOver"
+						@click="promptLeaveRoom"
+						class="button text"
+						style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
+					>
+						<i class="material-icons">logout</i>
+					</div>
+					<div
+						v-else-if="gameStore.gameState.state.isGameOver"
+						@click="playAgain"
+						class="button inline"
+						style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
+					>
+						PLAY AGAIN
+					</div>
+				</div>
+			</template>
+		</div>
 
-    <SwapView
-      :views="Object.values(Views)"
-      :currentView="currentView"
-    >
-      <template v-slot:closed>
-        <div style="display: flex; justify-content: center; margin: 3rem;">
-          <div
-            class="ui-block"
-            style="display: inline-block; text-align: center;"
-          >
-            <h3>
-              Sorry, room <span style="text-transform: uppercase;">{{ router.currentRoute.value.params.rid }}</span> is
-              not
-              available.
-            </h3>
-            <button
-              class="ui-pressable ui-shiny ui-raised"
-              @click="leaveRoom"
-            >Leave</button>
-          </div>
-        </div>
-      </template>
+		<SwapView
+			:views="Object.values(Views)"
+			:currentView="currentView"
+		>
+			<template v-slot:closed>
+				<div style="display: flex; justify-content: center; margin: 3rem;">
+					<div
+						class="ui-block"
+						style="display: inline-block; text-align: center;"
+					>
+						<h3>
+							Sorry, room <span style="text-transform: uppercase;">{{ router.currentRoute.value.params.rid
+								}}</span> is
+							not
+							available.
+						</h3>
+						<button
+							class="ui-pressable ui-shiny ui-raised"
+							@click="leaveRoom"
+						>Leave</button>
+					</div>
+				</div>
+			</template>
 
-      <template v-slot:setup>
-        <GameSetupView />
-      </template>
+			<template v-slot:setup>
+				<GameSetupView />
+			</template>
 
-      <template v-slot:play>
-        <GamePlayView />
-      </template>
+			<template v-slot:play>
+				<GamePlayView />
+			</template>
 
-      <template v-slot:loading>
-        <div style="width: 100%; text-align: center; margin-top: 3em;">Loading...</div>
-      </template>
-    </SwapView>
-  </div>
+			<template v-slot:loading>
+				<div style="width: 100%; text-align: center; margin-top: 3em;">Loading...</div>
+			</template>
+		</SwapView>
+	</div>
 
-  <div
-    class="modal-overlay"
-    v-if="showUsernameModal"
-  >
-    <div class="ui-block username-modal">
-      <h3>Choose a username</h3>
-      <input v-model="tmpUsername">
-      <button
-        class="ui-pressable ui-shiny ui-raised"
-        @click="saveUsername"
-      >Save</button>
-    </div>
-  </div>
+	<div
+		class="modal-overlay"
+		v-if="showUsernameModal"
+	>
+		<div class="ui-block username-modal">
+			<h3>Choose a username</h3>
+			<input v-model="tmpUsername">
+			<button
+				class="ui-pressable ui-shiny ui-raised"
+				@click="saveUsername"
+			>Save</button>
+		</div>
+	</div>
 
-  <div
-    v-if="gameStore.pingError"
-    class="ui-block disconnect-toast"
-  >
-    Disconnected from game. Retrying...
-  </div>
+	<div
+		v-if="gameStore.pingError"
+		class="ui-block disconnect-toast"
+	>
+		Disconnected from game. Retrying...
+	</div>
 
 </template>
 
 <style scoped>
 .game-wrapper {
-  min-width: 70vw;
-  padding: 1rem;
+	min-width: 70vw;
+	padding: 1rem;
 }
 
 #roomInfo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3em;
-  gap: 1em;
-  margin-bottom: 1rem;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.3em;
+	gap: 1em;
+	margin-bottom: 1rem;
 }
 
 #roomCode {
-  display: flex;
-  align-items: center;
-  font-weight: bold;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  letter-spacing: .1rem;
+	display: flex;
+	align-items: center;
+	font-weight: bold;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	letter-spacing: .1rem;
 }
 
 .code-cap {
-  text-transform: uppercase;
+	text-transform: uppercase;
 }
 
 .username-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  background: #fff;
-  width: calc(100% - 3rem);
-  max-width: 20rem;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+	background: #fff;
+	width: calc(100% - 3rem);
+	max-width: 20rem;
 }
 
 .username-modal input {
-  font-size: 1.2em;
+	font-size: 1.2em;
 }
 
 
 
 .disconnect-toast {
-  position: fixed;
-  bottom: 1rem;
-  left: 50%;
-  translate: -50% 0;
-  background: #fff;
+	position: fixed;
+	bottom: 1rem;
+	left: 50%;
+	translate: -50% 0;
+	background: #fff;
 
 }
 </style>

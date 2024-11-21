@@ -13,26 +13,62 @@ const urlB64ToUint8Array = (base64String) => {
 self.addEventListener('install', (event) => {
 	console.log('Service worker installed');
 });
+
 self.addEventListener('activate', async (event) => {
-	console.log('Service worker activate');
+	console.log('Service worker activated');
 	try {
 		const applicationServerKey = urlB64ToUint8Array(
-			'BJ5IxJBWdeqFDJTvrZ4wNRu7UY2XigDXjgiUBYEYVXDudxhEs0ReOJRBcBHsPYgZ5dyV8VjyqzbQKS8V7bUAglk'
+			'BBzZaYvtC6ZqAYbgdtjpuDjAKRjJ-Y1Lbkh3x-XenGBjFI7_JIKNEBHap1aRwWXgsHPMKhjDQJyl-XRSnz9UEZo'
 		);
 		const options = { applicationServerKey, userVisibleOnly: true };
-		const subscription = await self.registration.pushManager.subscribe(options);
-		console.log(JSON.stringify(subscription));
+		await self.registration.pushManager.subscribe(options);
 	} catch (err) {
 		console.log('Error', err);
 	}
 });
 
-self.addEventListener('push', function (event) {
-	if (event.data) {
-		console.log('Push event!! ', event.data.text());
-	} else {
-		console.log('Push event but no data');
+self.addEventListener('push', async function (event) {
+	let notifData;
+	try {
+		notifData = JSON.parse(event.data.text());
+	} catch (e) {
+		console.log('Error', e);
 	}
+	if (!notifData?.gameRoomId || !notifData?.title) {
+		console.log('Received malformed notification', notifData);
+		return;
+	}
+
+	const data = JSON.parse(event.data.text());
+	self.registration.showNotification(data.title, {
+		icon: '/blue.png',
+		badge: '/blue.png',
+		data: { gameRoomId: data.gameRoomId },
+		body: data.body,
+		vibrate: [200],
+	});
+});
+
+self.addEventListener('notificationclick', async (event) => {
+	const gameRoomId = event.notification.data.gameRoomId;
+	const gameUrl = self.location.origin + '/' + gameRoomId;
+
+	event.notification.close();
+	event.waitUntil(
+		(async () => {
+			const openTabs = await clients.matchAll({ type: 'window' });
+			const gameTab = openTabs.find((tab) => {
+				console.log(self);
+				return tab.url === gameUrl;
+			});
+
+			if (gameTab) {
+				gameTab.focus();
+			} else {
+				await clients.openWindow(gameUrl);
+			}
+		})()
+	);
 });
 
 // on('push', function (event) {
