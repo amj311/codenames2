@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useAppStore = defineStore('app', () => {
@@ -9,7 +9,10 @@ export const useAppStore = defineStore('app', () => {
     assassin: 'black',
   };
 
-  const hasNotificationPermission = ref(Notification?.permission === 'granted');
+  const notificationPermission = ref(Notification?.permission);
+  const hasNotificationPermission = computed(() => {
+    return notificationPermission.value === 'granted';
+  })
 
   function canNotification() {
     if ('Notification' in window) {
@@ -27,9 +30,8 @@ export const useAppStore = defineStore('app', () => {
   async function askNotificationPermission() {
     if (!canNotification()) return;
     const permission = await Notification.requestPermission();
-    const granted = permission === 'granted';
-    hasNotificationPermission.value = granted;
-    return granted;
+    notificationPermission.value = permission;
+    return permission;
   }
 
   function notify(title, options) {
@@ -51,7 +53,10 @@ export const useAppStore = defineStore('app', () => {
 
   return {
     teamImgs,
+
+    canNotification,
     hasNotificationPermission,
+    notificationPermission,
     get canRequestNotification() {
       return canRequestNotification();
     },

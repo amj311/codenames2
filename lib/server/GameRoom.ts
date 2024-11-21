@@ -21,19 +21,10 @@ export default class GameRoom {
   private createHostUser() {
     const host = this.registerNewUser({
       username: 'Host',
-      isHost: true,
       isPlayer: true,
     });
     this.hostUserId = host.id;
     return host;
-  }
-
-  public joinNewPlayer() {
-    return this.registerNewUser({
-      username: '',
-      isHost: false,
-      isPlayer: true,
-    });
   }
 
   public joinUser(returningUserId = '') {
@@ -42,10 +33,17 @@ export default class GameRoom {
       existingUser.connection.ping();
       return this.users.get(returningUserId);
     }
-    return this.registerNewUser();
+    return this.joinNewPlayer();
   }
 
-  registerNewUser(userData = {}) {
+  private joinNewPlayer() {
+    return this.registerNewUser({
+      username: '',
+      isPlayer: true,
+    });
+  }
+
+  private registerNewUser(userData = {}) {
     const newUserId = userIds.getNew();
     const newUser = {
       id: newUserId,
@@ -105,6 +103,7 @@ export default class GameRoom {
   getRoomSummary() {
     return {
       id: this.id,
+      hostUserId: this.hostUserId,
       players: this.getPlayers(),
       users: Array.from(this.users.values()),
     };

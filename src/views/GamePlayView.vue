@@ -59,7 +59,7 @@ export default {
 
     canFlip() {
       return (
-        this.user.isHost ||
+        this.gameStore.isHost ||
         this.gameStore.config.numTeams === 1 ||
         (this.userCaptainOfTeam && this.gameState.state.canRevealCard && this.gameState.teamOfTurn?.id === this.userCaptainOfTeam.id)
       )
@@ -154,31 +154,6 @@ export default {
 
 <template>
   <div id="boardWrapper">
-    <!-- <div
-      id="teamSelect"
-      v-if="needNewCaptains"
-    >
-      <h3>Missing Team Captains!</h3>
-      <div v-if="!user.isHost && !userCaptainOfTeam">Select an option to become Team Captain:</div>
-      <div
-        class="form-row"
-        id="teamSelect"
-      >
-        <div
-          v-for="teamCode in teamCaptainOptions"
-          :key="teamCode"
-        >
-          <div
-            v-if="!gameState.teams[teamCode].captainId"
-            class="ui-shiny ui-raised team-option"
-            :class="{ 'ui-pressable': !user.isHost && !userCaptainOfTeam }"
-            @click="setUserAsCaptain(teamCode)"
-            :style="{ 'background-image': `url(${gameState.teams[teamCode].img})` }"
-          ></div>
-        </div>
-      </div>
-    </div> -->
-
     <div
       id="playArea"
       :class="{ prevented: preventPlay }"
@@ -309,7 +284,7 @@ export default {
 
       <div
         id="bottomBar"
-        v-if="user.isHost || userCaptainOfTeam"
+        v-if="gameStore.isHost || userCaptainOfTeam"
       >
         <div style="display: flex; justify-content: flex-start;">
         </div>

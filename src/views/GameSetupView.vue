@@ -120,7 +120,7 @@ export default {
       const hasMasters = !Array.from(Object.values(this.gameState.teams)).some(team => !team.captainId);
       return (
         hasMasters &&
-        (this.user.isHost || this.userCaptainOfTeam)
+        (this.gameStore.isHost || this.userCaptainOfTeam)
       )
     },
 
@@ -319,7 +319,7 @@ export default {
                 <span
                   v-if="gameState.teams[teamCode].captainId === user.id
                     || gameState.teams[teamCode].captainId === AI_CODEMASTER
-                    || user.isHost"
+                    || gameStore.isHost"
                   class="remove-captain"
                   @click.stop="() => removeTeamCaptain(teamCode)"
                 >
@@ -344,13 +344,13 @@ export default {
 
     <div
       id="settings"
-      v-if="user.isHost || userCaptainOfTeam"
+      v-if="gameStore.isHost || userCaptainOfTeam"
     >
 
       <div
         id="joinInstructions"
         class="ui-block"
-        v-if="user.isHost"
+        v-if="gameStore.isHost"
       >
         <h3>Scan To Join</h3>
         <div style="text-align:center">
@@ -422,6 +422,7 @@ export default {
                 v-model="tmpConfig.numTeamCards"
                 min="1"
                 :max="maxCompTeamQty"
+                onfocus="this.select()"
               >
             </div>
             <div>
@@ -431,6 +432,7 @@ export default {
                 v-model="tmpConfig.numAssassins"
                 min="0"
                 max="3"
+                onfocus="this.select()"
               >
             </div>
           </div>
@@ -460,15 +462,34 @@ export default {
       </div>
     </div>
 
-    <button
-      v-if="!notificationsOn && appStore.canRequestNotification"
-      @click="requestNotifications"
-      class="text"
-      style="display: flex; align-items: center; gap: .5em; user-select: none; margin-top: .5rem;"
-    >
-      <i class="material-icons">notifications</i>
-      Get notifications for this game
-    </button>
+    <template v-if="appStore.canNotification()">
+      <button
+        v-if="appStore.notificationPermission === 'default'"
+        @click="requestNotifications"
+        class="text"
+        style="display: flex; align-items: center; gap: .5em; user-select: none; margin-top: .5rem;"
+      >
+        <i class="material-icons">notification_add</i>
+        Turn on notifications
+      </button>
+      <button
+        v-else-if="appStore.notificationPermission === 'denied'"
+        class="text"
+        style="display: flex; align-items: center; gap: .5em; user-select: none; margin-top: .5rem; pointer-events: none;"
+      >
+        <i class="material-icons">notifications_off</i>
+        Notifications are blocked
+      </button>
+      <button
+        v-else
+        class="text"
+        style="display: flex; align-items: center; gap: .5em; user-select: none; margin-top: .5rem; pointer-events: none;"
+      >
+        <i class="material-icons">notifications_active</i>
+        Notifications on
+      </button>
+    </template>
+
 
     <div id="playAction">
       <button

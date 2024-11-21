@@ -6,7 +6,7 @@ import SwapView from '@/components/SwapView.vue';
 import { useGameStore } from '@/stores/game.store';
 import GameSetupView from './GameSetupView.vue';
 import GamePlayView from './GamePlayView.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, RouterLink } from 'vue-router';
 
 const router = useRouter();
@@ -29,16 +29,18 @@ const currentView = computed(() => {
     }
     return Views.Setup;
   }
-  attemptJoinRoom();
   return Views.Loading;
 })
 
-watch(computed(() => gameStore.gameState?.user), () => {
-  if (gameStore.gameState?.user && !gameStore.user.username && !showUsernameModal.value) {
-    console.log("detected missing user name", gameStore.gameState?.user);
+watch(computed(() => gameStore.user), () => {
+  if (gameStore.user && !gameStore.user.username && !showUsernameModal.value) {
     openUsernameModal();
   }
 });
+
+onMounted(async () => {
+  attemptJoinRoom();
+})
 
 async function attemptJoinRoom() {
   const rid = router.currentRoute.value.params.rid;

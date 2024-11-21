@@ -53,9 +53,7 @@ export const useGameStore = defineStore('game', {
     },
 
     initPings() {
-      if (this.pingTimeout) {
-        clearTimeout(this.pingTimeout);
-      }
+      clearTimeout(this.pingTimeout);
       this.doPing();
     },
     async doPing() {
@@ -144,7 +142,7 @@ export const useGameStore = defineStore('game', {
   },
   getters: {
     isHost(state) {
-      return state.user && state.user.isHost;
+      return state.user && state.roomState && state.user.id === state.roomState.hostUserId;
     },
     userCaptainOfTeam(state) {
       return getCaptainsTeam(state.user, state.gameState.teams);
