@@ -117,11 +117,14 @@ export default {
 			return masters;
 		},
 
+		canManageGame() {
+			return this.gameStore.isHost || this.userCaptainOfTeam;
+		},
+
 		canStartGame() {
 			const hasMasters = !Array.from(Object.values(this.gameState.teams)).some(team => !team.captainId);
 			return (
-				hasMasters &&
-				(this.gameStore.isHost || this.userCaptainOfTeam)
+				hasMasters && this.canManageGame
 			)
 		},
 
@@ -342,10 +345,7 @@ export default {
 			</div>
 		</div>
 
-		<div
-			id="settings"
-			v-if="gameStore.isHost || userCaptainOfTeam"
-		>
+		<div id="settings">
 
 			<div
 				id="joinInstructions"
@@ -378,6 +378,7 @@ export default {
 					<select
 						style="text-transform: capitalize;"
 						v-model="tmpConfig.mode"
+						:disabled="!canManageGame"
 					>
 						<option>classic</option>
 						<option>high score</option>
@@ -408,6 +409,7 @@ export default {
 							v-model="tmpConfig.numCardsSqrt"
 							min="3"
 							max="6"
+							:disabled="!canManageGame"
 						>
 						<label style="width:1em;">{{ tmpConfig.numCardsSqrt ** 2 }}</label>
 					</div>
@@ -423,6 +425,7 @@ export default {
 								min="1"
 								:max="maxCompTeamQty"
 								onfocus="this.select()"
+								:disabled="!canManageGame"
 							>
 						</div>
 						<div>
@@ -433,13 +436,17 @@ export default {
 								min="0"
 								max="3"
 								onfocus="this.select()"
+								:disabled="!canManageGame"
 							>
 						</div>
 					</div>
 					<div class="form-row">
 						<label>Word Deck</label>
 						<div style="flex-grow: 1" />
-						<select v-model="tmpConfig.wordDeck">
+						<select
+							v-model="tmpConfig.wordDeck"
+							:disabled="!canManageGame"
+						>
 							<option
 								v-for="wordsDeck in wordDecks"
 								:key="wordsDeck.name"
@@ -450,12 +457,13 @@ export default {
 							class="material-icons"
 							@click="() => openCustomDeckModal(customDecks[tmpConfig.wordDeck])"
 							style="padding-left: 4px; cursor: pointer;"
-							v-if="selectedCustomWords"
+							v-if="selectedCustomWords && canManageGame"
 						>edit</i>
 						<i
 							class="material-icons"
 							@click="openCustomDeckModal({ name: '', wordsTxt: '' })"
 							style="padding-left: 4px; cursor: pointer;"
+							v-if="canManageGame"
 						>add</i>
 					</div>
 				</form>

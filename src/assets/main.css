@@ -180,10 +180,10 @@ button.text:hover,
 	background-color: #0001;
 }
 
-[disabled='disabled'],
-[disabled] {
+.button[disabled='disabled'],
+.button[disabled] {
 	pointer-events: none;
-	opacity: 0.5;
+	opacity: 0.8;
 }
 
 .ui-pressable {

@@ -178,6 +178,7 @@ export default {
 							v-model="newHintMatches"
 							:max="numCardsRemainingForTeamOfTurn"
 							:min="1"
+							onfocus="this.select()"
 						/>
 						&nbsp;
 						<button
