@@ -42,7 +42,7 @@ self.addEventListener('push', async function (event) {
 	const data = JSON.parse(event.data.text());
 	self.registration.showNotification(data.title, {
 		icon: '/blue.png',
-		badge: '/blue.png',
+		badge: '/mask.png',
 		data: { gameRoomId: data.gameRoomId },
 		body: data.body,
 		vibrate: [200],
