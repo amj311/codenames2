@@ -36,7 +36,6 @@ export default class Game {
 	public turnHistory: Turn[] = [];
 	public currentTurn: Turn | null = null;
 	public teamOfTurn: Team | null = null;
-	public hintOfTurn = '';
 	public numHintMatches: 0;
 	public numMatchesFound: number = 0;
 	public turnCount = 0;
@@ -69,11 +68,12 @@ export default class Game {
 			winner: this.winner,
 			winningCard: this.winningCard,
 			numMatchesFound: this.numMatchesFound,
-			hintOfTurn: this.hintOfTurn,
 			numHintMatches: this.numHintMatches,
 			turnCount: this.turnCount,
 			aiHintFailure: this.aiHintFailure,
 			aiHintLog: this.aiHintLog,
+			currentTurn: this.currentTurn,
+			turnHistory: this.turnHistory
 		}
 	}
 
@@ -153,13 +153,14 @@ export default class Game {
 			},
 
 			startGuessing({ hint, matchingCardIds }) {
+				if (!game.currentTurn) return;
+
 				game.state = GameStates.guessing;
 				game.numMatchesFound = 0;
-				game.hintOfTurn = hint;
 				game.numHintMatches = matchingCardIds.length;
 
-				game.currentTurn!.hint = hint;
-				game.currentTurn!.matchingCardIds = matchingCardIds;
+				game.currentTurn.hint = hint;
+				game.currentTurn.matchingCardIds = matchingCardIds;
 
 				// notify players other than the current captain
 				const teamOfTurn = game.teams[game.teamOfTurn!.id];
@@ -185,12 +186,13 @@ export default class Game {
 				game.winner = null;
 				game.winningCard = null;
 				game.numMatchesFound = 0;
-				game.hintOfTurn = '';
 				game.numHintMatches = 0;
 				game.turnCount = 0;
 				game.aiHintFailure = false;
 				game.aiHintCount = 0;
 				game.aiHintLog = [];
+				game.currentTurn = null;
+				game.turnHistory = [];
 				game.state = GameStates.waitingToStart;
 			}
 		}
@@ -246,8 +248,7 @@ export default class Game {
 		console.log(nextTeamId);
 		console.log(this.teamOfTurn);
 
-		const previousHint = this.hintOfTurn;
-		this.hintOfTurn = '';
+		const previousHint = this.currentTurn?.hint;
 		this.numHintMatches = 0;
 		this.numMatchesFound = 0;
 		this.state = GameStates.turnPrep;

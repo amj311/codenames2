@@ -34,6 +34,9 @@ export default {
 		gameState() {
 			return this.gameStore.gameState;
 		},
+		currentTurn() {
+			return this.gameState.currentTurn;
+		},
 		gameConfig() {
 			return this.gameState.config;
 		},
@@ -166,14 +169,15 @@ export default {
 					id="duringTurn"
 					v-if="gameState.state.name === 'guessing'"
 				>
-					<div id="activeTeam">Hint: <span style="font-weight: bold">{{ gameState.hintOfTurn }}</span></div>
+					<div id="activeTeam">Hint: <span style="font-weight: bold">{{ currentTurn.hint }}</span>
+					</div>
 					&nbsp;&nbsp;&nbsp;
 					<div
 						id="guessCounter"
 						v-if="gameState.state.canRevealCard"
 					>
 						Found: <span style="font-weight: bold">{{ gameState.numMatchesFound }}/{{
-							gameState.numHintMatches }}</span>
+							currentTurn.matchingCardIds.length }}</span>
 					</div>
 					&nbsp;
 					<div
