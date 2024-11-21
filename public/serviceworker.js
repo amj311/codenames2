@@ -1,25 +1,33 @@
-const urlB64ToUint8Array = (base64String) => {
-	const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-	const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-	const rawData = atob(base64);
-	const outputArray = new Uint8Array(rawData.length);
-	for (let i = 0; i < rawData.length; ++i) {
-		outputArray[i] = rawData.charCodeAt(i);
-	}
-	return outputArray;
-};
+// const urlB64ToUint8Array = (base64String) => {
+// 	const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+// 	const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+// 	const rawData = atob(base64);
+// 	const outputArray = new Uint8Array(rawData.length);
+// 	for (let i = 0; i < rawData.length; ++i) {
+// 		outputArray[i] = rawData.charCodeAt(i);
+// 	}
+// 	return outputArray;
+// };
 
 // This code executes in its own worker or thread
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
 	console.log('Service worker installed');
 });
 
-self.addEventListener('activate', async (event) => {
+async function fetchAsync(url) {
+	const response = await fetch(url);
+	console.log(response);
+	return await response.text();
+}
+
+self.addEventListener('activate', async () => {
 	console.log('Service worker activated');
 	try {
-		const applicationServerKey = urlB64ToUint8Array(
-			'BBzZaYvtC6ZqAYbgdtjpuDjAKRjJ-Y1Lbkh3x-XenGBjFI7_JIKNEBHap1aRwWXgsHPMKhjDQJyl-XRSnz9UEZo'
-		);
+		const apiOrigin = self.location.origin.includes(':517')
+			? 'http://localhost:5000/api'
+			: '/api';
+		const applicationServerKey = await fetchAsync(apiOrigin + '/vapidkey');
+		console.log(applicationServerKey);
 		const options = { applicationServerKey, userVisibleOnly: true };
 		await self.registration.pushManager.subscribe(options);
 	} catch (err) {
@@ -46,6 +54,8 @@ self.addEventListener('push', async function (event) {
 		data: { gameRoomId: data.gameRoomId },
 		body: data.body,
 		vibrate: [200],
+		tag: 'game_' + data.gameRoomId,
+		renotify: true,
 	});
 });
 
