@@ -14,7 +14,6 @@ export default {
 
 	data() {
 		return {
-			preventPlay: false,
 			newHint: "",
 			newHintMatches: 0,
 			CardSuites,
@@ -74,6 +73,11 @@ export default {
 		numCardsRemainingForTeamOfTurn() {
 			return this.gameState.cards.filter(c => c.suiteId === this.gameState.teamOfTurn.id && !c.revealed).length;
 		},
+		notificationTrigger() {
+			return JSON.stringify({
+				state: this.gameState.state,
+			});
+		},
 	},
 
 	methods: {
@@ -120,16 +124,25 @@ export default {
 			this.newHintMatches = 0;
 		},
 	},
+
+	watch: {
+		notificationTrigger() {
+			// alert players when hint is ready
+			if (
+				this.gameState.state.name === 'guessing' &&
+				!this.userCaptainOfTeam
+			) {
+				this.appStore.vibrate();
+			}
+		}
+	}
 }
 </script>
 
 
 <template>
 	<div id="boardWrapper">
-		<div
-			id="playArea"
-			:class="{ prevented: preventPlay }"
-		>
+		<div id="playArea">
 			<div id="roundSummary">
 				<div
 					id="duringTurn"
@@ -249,7 +262,6 @@ export default {
 			<div
 				v-if="gameState.cards.length > 0"
 				class="cards-table"
-				:class="{ 'prevented': !(gameState.state.canRevealCard || gameState.state.isGameOver) }"
 			>
 				<div
 					v-for="card in gameState.cards"
@@ -373,10 +385,6 @@ div#topBar {
 
 div#playArea {
 	padding: 1em;
-}
-
-.prevented {
-	pointer-events: none;
 }
 
 .cards-table {

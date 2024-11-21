@@ -4,78 +4,84 @@ import { defineStore } from 'pinia'
 let swRegistration;
 
 export const useAppStore = defineStore('app', () => {
-  const teamImgs = {
-    teamOne: 'blue',
-    teamTwo: 'red',
-    bystander: 'yellow',
-    assassin: 'black',
-  };
+	const teamImgs = {
+		teamOne: 'blue',
+		teamTwo: 'red',
+		bystander: 'yellow',
+		assassin: 'black',
+	};
 
-  const notificationPermission = ref(Notification?.permission);
-  const hasNotificationPermission = computed(() => {
-    return notificationPermission.value === 'granted';
-  })
+	const notificationPermission = ref(Notification?.permission);
+	const hasNotificationPermission = computed(() => {
+		return notificationPermission.value === 'granted';
+	})
 
-  function canNotification() {
-    if ('Notification' in window) {
-      return true;
-    }
-    console.log('This browser does not support desktop notification');
-    return false;
-  }
+	function canNotification() {
+		if ('Notification' in window) {
+			return true;
+		}
+		console.log('This browser does not support desktop notification');
+		return false;
+	}
 
-  function canRequestNotification() {
-    if (!canNotification()) return false;
-    return Notification.permission !== 'denied';
-  }
+	function canRequestNotification() {
+		if (!canNotification()) return false;
+		return Notification.permission !== 'denied';
+	}
 
-  async function askNotificationPermission() {
-    if (!canNotification()) return;
-    const permission = await Notification.requestPermission();
-    notificationPermission.value = permission;
-    return permission;
-  }
+	async function askNotificationPermission() {
+		if (!canNotification()) return;
+		const permission = await Notification.requestPermission();
+		notificationPermission.value = permission;
+		return permission;
+	}
 
-  function notify(title, options) {
-    if (!document.hidden || !hasNotificationPermission.value) {
-      console.log('Choosing not to display notification');
-      return;
-    };
+	function notify(title, options) {
+		if (!document.hidden || !hasNotificationPermission.value) {
+			console.log('Choosing not to display notification');
+			return;
+		};
 
-    const finalOptions = {
-      icon: '/blue.png',
-      badge: '/blue.png',
-      ...options,
-    }
+		const finalOptions = {
+			icon: '/blue.png',
+			badge: '/blue.png',
+			...options,
+		}
 
-    const notification = swRegistration ? swRegistration.showNotification(title, finalOptions) : new Notification(title, finalOptions);
-    notification.onclick = () => {
-      window.focus();
-      notification.close();
-    }
-  }
+		const notification = swRegistration ? swRegistration.showNotification(title, finalOptions) : new Notification(title, finalOptions);
+		notification.onclick = () => {
+			window.focus();
+			notification.close();
+		}
+	}
 
-  async function getSwSubscription() {
-    if (!swRegistration) {
-      swRegistration = await registerServiceWorker();
-    }
-    return await swRegistration?.pushManager.getSubscription();
-  }
+	async function getSwSubscription() {
+		if (!swRegistration) {
+			swRegistration = await registerServiceWorker();
+		}
+		return await swRegistration?.pushManager.getSubscription();
+	}
 
 
-  return {
-    teamImgs,
+	return {
+		teamImgs,
 
-    canNotification,
-    hasNotificationPermission,
-    notificationPermission,
-    get canRequestNotification() {
-      return canRequestNotification();
-    },
-    askNotificationPermission,
-    notify,
-    getSwSubscription,
-  }
+		canNotification,
+		hasNotificationPermission,
+		notificationPermission,
+		get canRequestNotification() {
+			return canRequestNotification();
+		},
+		askNotificationPermission,
+		notify,
+		getSwSubscription,
+
+		vibrate(pattern = 100) {
+			if ('vibrate' in navigator) {
+				navigator.vibrate(pattern);
+			}
+		}
+	}
 })
 
 
@@ -83,23 +89,23 @@ export const useAppStore = defineStore('app', () => {
 
 
 const check = () => {
-  if (!('serviceWorker' in navigator)) {
-    console.log('No Service Worker support!')
-    return false;
-  }
-  if (!('PushManager' in window)) {
-    console.log('No Push API Support!')
-    return false;
-  }
-  return true;
+	if (!('serviceWorker' in navigator)) {
+		console.log('No Service Worker support!')
+		return false;
+	}
+	if (!('PushManager' in window)) {
+		console.log('No Push API Support!')
+		return false;
+	}
+	return true;
 }
 const registerServiceWorker = async () => {
-  swRegistration = await navigator.serviceWorker.register('serviceworker.js'); //notice the file name
-  return swRegistration;
+	swRegistration = await navigator.serviceWorker.register('serviceworker.js'); //notice the file name
+	return swRegistration;
 }
 
 const main = async () => { //notice I changed main to async function so that I can use await for registerServiceWorker
-  if (!check()) return;
-  swRegistration = await registerServiceWorker();
+	if (!check()) return;
+	swRegistration = await registerServiceWorker();
 }
 main();

@@ -13,6 +13,8 @@ export default {
 			showFlip: false,
 			waitForFreeRotate: false,
 			anims: [],
+			mouseover: false,
+			unMouseoverTimeout: null
 		}
 	},
 
@@ -46,10 +48,16 @@ export default {
 			if (this.canFlip) {
 				setTimeout(() => this.showFlip = true, 5);
 			}
+			if (this.freeRotate) {
+				clearTimeout(this.unMouseoverTimeout);
+				this.mouseover = true;
+			}
 		},
 		onMouseLeave() {
 			setTimeout(() => this.showFlip = false, 5);
 			this.waitForFreeRotate = false;
+
+			this.unMouseoverTimeout = setTimeout(() => this.mouseover = false, 2000);
 		},
 
 		doFlipCard() {
@@ -98,7 +106,10 @@ export default {
 
 	watch: {
 		isRevealed() {
-			this.animateTeamNinja();
+			if (this.card.revealed) {
+				this.appStore.vibrate();
+				this.animateTeamNinja();
+			}
 			// if (res.wasTeamCard) this.animateGoodFlip(res.card.id);
 			// else if (res.card.suiteId == this.gameStore.gameState.teams.assassin.id) this.animateAssassin(res.card.id);
 			// else this.animateBadFlip(res.card.id)
@@ -111,7 +122,7 @@ export default {
 <template>
 	<div
 		class="wrapper"
-		:class="{ flipped: card.revealed, freeRotate: freeRotate && !waitForFreeRotate }"
+		:class="{ flipped: card.revealed, freeRotate: freeRotate && !waitForFreeRotate, mouseover }"
 		:style="{ zIndex: anims.length > 0 ? 1 : 0 }"
 		@mouseenter="onMouseEnter"
 		@mouseleave="onMouseLeave"
@@ -210,7 +221,7 @@ export default {
 	transform: rotateX(180deg);
 }
 
-.freeRotate:hover div.card {
+.freeRotate.mouseover div.card {
 	transform: rotateX(0deg);
 }
 
