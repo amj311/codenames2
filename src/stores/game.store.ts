@@ -24,21 +24,18 @@ export const useGameStore = defineStore('game', {
       this.clear();
       const { data } = await api.post('/room/new');
       this.upsertJoinedGame({ gameRoomId: data.rid, userId: data.hostUser.id });
-      console.log("loaded user!", data.hostUser);
-      console.log("saved joined game", this.getJoinedGame(data.rid));
       await this.joinGame(data.rid);
       return data.rid;
     },
 
     async joinGame(rid: string) {
-      console.log("loading joined game", this.getJoinedGame(rid));
       const returningUserId = this.getJoinedGame(rid)?.userId;
       const { data } = await api.post('/room/' + rid + '/join', {
         returningUserId,
       });
       this.clear();
       this.gameRoomId = rid;
-      console.log("loaded user!", data.user);
+      this.upsertJoinedGame({ gameRoomId: rid, userId: data.user.id });
       this.setUser(data.user);
       this.setGameState(data.game);
       this.setRoomState(data.room);

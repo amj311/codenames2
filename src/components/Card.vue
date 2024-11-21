@@ -32,7 +32,7 @@ export default {
         this.gameStore.gameState.state.canRevealCard &&
         (
           this.gameStore.userCaptainOfTeam && this.gameStore.gameState.teamOfTurn?.id === this.gameStore.userCaptainOfTeam?.id
-          || this.gameStore.roomState?.users.length <= 2
+          || this.gameStore.config.numTeams === 1
         )
       )
     },

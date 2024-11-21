@@ -60,7 +60,7 @@ export default {
     canFlip() {
       return (
         this.user.isHost ||
-        this.gameStore.roomState?.users.length <= 2 ||
+        this.gameStore.config.numTeams === 1 ||
         (this.userCaptainOfTeam && this.gameState.state.canRevealCard && this.gameState.teamOfTurn?.id === this.userCaptainOfTeam.id)
       )
     },
@@ -205,7 +205,6 @@ export default {
             exposure_plus_1
           </div>
           <div style="flex-grow:1;" />
-          {{ canFlip }}
           <button
             @click="initAdvanceTurn"
             v-if="canFlip"

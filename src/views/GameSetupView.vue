@@ -672,7 +672,7 @@ div#teamLists {
 .team-caption-option .remove-captain i {
   pointer-events: all;
   cursor: pointer;
-  vertical-align: bottom;
+  vertical-align: middle;
   padding-left: .5em;
 }
 
