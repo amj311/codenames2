@@ -140,14 +140,12 @@ export default {
 				></div>
 				<div class="word-wrapper">
 					<div class="word">{{ card.word }}</div>
-					<Transition name="fade">
-						<div
-							v-if="showFlip"
-							class="flip-confirm"
-						>
-							<i class="material-icons">sync</i>&nbsp;Press to flip
-						</div>
-					</Transition>
+					<div
+						class="flip-confirm"
+						:class="{ visible: showFlip }"
+					>
+						Press to flip&nbsp;<i class="material-icons">sync</i>
+					</div>
 				</div>
 			</div>
 			<div
@@ -193,7 +191,10 @@ export default {
 
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style
+	scoped
+	lang="scss"
+>
 .wrapper {
 	perspective: 500px;
 	position: absolute;
@@ -268,18 +269,22 @@ export default {
 
 .flip-confirm {
 	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	padding: .5em;
+	bottom: .5em;
+	right: .5em;
 	background: rgba(255, 255, 255, 0.7);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	user-select: none;
 	font-size: .8em;
-}
+	opacity: .6;
+	translate: calc(100% + 1em) 0;
+	transition: 200ms;
 
+	&.visible {
+		translate: 0 0;
+	}
+}
 
 .flipped .front::after {
 	font-family: 'Material Icons';
@@ -290,7 +295,7 @@ export default {
 	bottom: 0.5rem;
 	right: 0.5rem;
 	font-size: 1em;
-	filter: drop-shadow(1px 1px 1px #0002);
+	opacity: .6;
 }
 
 .back {
