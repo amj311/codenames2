@@ -327,6 +327,7 @@ div#boardWrapper {
 	max-width: calc(100vw - 3rem);
 	display: flex;
 	flex-direction: column;
+	margin: 0 auto;
 }
 
 div#topBar {
