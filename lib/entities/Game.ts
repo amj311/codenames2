@@ -1,4 +1,4 @@
-import { AI_CODEMASTER, CardSuites } from '../constants.js';
+import { AI_CODEMASTER, CardSuites, DefaultWordDecks } from '../constants.js';
 import GameRoom from '../server/GameRoom.js';
 import { AiService } from '../services/AiService.js';
 import GenerateCardsService from '../services/GenerateCardsService.js'
@@ -9,7 +9,7 @@ import Team from './Team.js'
 
 const defaultConfig = {
 	mode: 'classic',
-	wordDeck: 'Easy',
+	wordDeck: DefaultWordDecks[0].name,
 	numCardsSqrt: 5,
 	numTeams: 2,
 	numTeamCards: 9,
