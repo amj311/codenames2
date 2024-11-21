@@ -378,11 +378,15 @@ export default {
 					<select
 						style="text-transform: capitalize;"
 						v-model="tmpConfig.mode"
-						:disabled="!canManageGame"
+						v-if="canManageGame"
 					>
 						<option>classic</option>
 						<option>high score</option>
 					</select>
+					<span
+						v-else
+						style="text-transform: capitalize;"
+					>{{ tmpConfig.mode }}</span>
 				</h3>
 				<div id="boardPreview">
 					<div
@@ -425,8 +429,9 @@ export default {
 								min="1"
 								:max="maxCompTeamQty"
 								onfocus="this.select()"
-								:disabled="!canManageGame"
-							>
+								v-if="canManageGame"
+							/>
+							<span v-else>{{ tmpConfig.numTeamCards }}</span>
 						</div>
 						<div>
 							<label>Assassins&nbsp;&nbsp;</label>
@@ -436,8 +441,9 @@ export default {
 								min="0"
 								max="3"
 								onfocus="this.select()"
-								:disabled="!canManageGame"
-							>
+								v-if="canManageGame"
+							/>
+							<span v-else>{{ tmpConfig.numAssassins }}</span>
 						</div>
 					</div>
 					<div class="form-row">
@@ -445,7 +451,7 @@ export default {
 						<div style="flex-grow: 1" />
 						<select
 							v-model="tmpConfig.wordDeck"
-							:disabled="!canManageGame"
+							v-if="canManageGame"
 						>
 							<option
 								v-for="wordsDeck in wordDecks"
@@ -453,6 +459,9 @@ export default {
 								:value="wordsDeck.name"
 							>{{ wordsDeck.name }}</option>
 						</select>
+						<div v-else>
+							{{ tmpConfig.wordDeck }}
+						</div>
 						<i
 							class="material-icons"
 							@click="() => openCustomDeckModal(customDecks[tmpConfig.wordDeck])"
