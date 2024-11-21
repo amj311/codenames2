@@ -76,7 +76,7 @@ export default class GameRoom {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const room = this;
 		return {
-			async pingUser(userId: string, { pushSubscription, isActiveTab }) {
+			async pingUser({ pushSubscription, isActiveTab }, userId: string) {
 				const user = room.users.get(userId);
 				if (!user) {
 					return;
@@ -89,7 +89,7 @@ export default class GameRoom {
 				user.isActiveTab = isActiveTab;
 			},
 
-			updateUserData(userId: string, newUserData: Partial<User>) {
+			updateUserData(newUserData: Partial<User>, userId: string) {
 				const user = room.users.get(userId);
 				if (!user) {
 					return;
@@ -99,7 +99,7 @@ export default class GameRoom {
 				}
 			},
 
-			leaveRoom(userId: string) {
+			leaveRoom(_, userId: string) {
 				if (userId === room.hostUserId) {
 					this.hostUserId = null;
 				}
@@ -157,13 +157,13 @@ export default class GameRoom {
 		return user && (!user.isActiveTab || Date.now() > user.connection.lastPing + ACTIVE_USER_TIME);
 	}
 
-	async doRoomAction(userId: string, action: keyof typeof this.actions, data) {
-		return await this.actions[action](userId, data);
+	async doRoomAction(action: keyof typeof this.actions, data, userId: string) {
+		return await this.actions[action](data, userId);
 	}
 
 
-	async doGameAction(userId: string, action: keyof typeof this.game.actions, data) {
-		await this.game.actions[action](userId, data);
+	async doGameAction(action: keyof typeof this.game.actions, data, userId?: string) {
+		await this.game.actions[action](data);
 	}
 
 	getRoomSummary() {

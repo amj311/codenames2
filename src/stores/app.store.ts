@@ -76,7 +76,7 @@ export const useAppStore = defineStore('app', () => {
 		notify,
 		getSwSubscription,
 
-		vibrate(pattern = 100) {
+		vibrate(pattern = 50) {
 			if ('vibrate' in navigator) {
 				navigator.vibrate(pattern);
 			}

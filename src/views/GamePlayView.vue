@@ -15,7 +15,7 @@ export default {
 	data() {
 		return {
 			newHint: "",
-			newHintMatches: 0,
+			newMatchingCardIds: new Set(),
 			CardSuites,
 			AI_CODEMASTER,
 			showAiHintsLog: false,
@@ -111,18 +111,36 @@ export default {
 		},
 
 		async startGuessing() {
-			if (!this.newHint || !this.newHintMatches) {
-				alert("Please enter a hint and how many words it matches!");
+			if (!this.newHint) {
+				alert("Please enter a hint");
 				return;
 			};
+			if (this.newMatchingCardIds.size === 0) {
+				alert("Please select words for your hint");
+				return;
+			}
 			await this.gameStore.doGameAction('startGuessing', {
 				hint: this.newHint,
-				numHintMatches: this.newHintMatches,
+				matchingCardIds: Array.from(this.newMatchingCardIds),
 			});
 
 			this.newHint = "";
-			this.newHintMatches = 0;
+			this.newMatchingCardIds.clear();
 		},
+
+		toggleSelectCard(card) {
+			if (!this.canSelectCard(card)) return;
+			if (this.newMatchingCardIds.has(card.id)) {
+				this.newMatchingCardIds.delete(card.id);
+			}
+			else {
+				this.newMatchingCardIds.add(card.id);
+			}
+		},
+
+		canSelectCard(card) {
+			return this.showTurnPrep && card.suiteId === this.gameState.teamOfTurn.id && !card.revealed;
+		}
 	},
 
 	watch: {
@@ -179,27 +197,21 @@ export default {
 				>
 					<div v-if="showTurnPrep">
 						<div style="margin-bottom: 1em">
-							Write a hint for some your cards!
+							Write a hint and select which cards it matches!
 						</div>
 						<input
 							type="text"
 							v-model="newHint"
 							placeholder="Type hint here..."
 						/>
-						<input
-							type="number"
-							v-model="newHintMatches"
-							:max="numCardsRemainingForTeamOfTurn"
-							:min="1"
-							onfocus="this.select()"
-						/>
-						&nbsp;
+						<span> for {{ newMatchingCardIds.size }} words</span>
+						<br />
 						<button
 							@click="startGuessing"
-							class="ui-raised ui-pressable ui-shiny inline"
-							:style="{ 'background-color': gameState.teamOfTurn.color }"
+							class="ui-raised ui-pressable ui-shiny"
+							:style="{ 'background-color': gameState.teamOfTurn.color, marginTop: '1em' }"
 						>
-							START TURN
+							GIVE HINT
 						</button>
 					</div>
 					<div v-else>
@@ -262,33 +274,20 @@ export default {
 			<div
 				v-if="gameState.cards.length > 0"
 				class="cards-table"
+				:class="{ selecting: showTurnPrep }"
 			>
 				<div
 					v-for="card in gameState.cards"
 					:key="card.word"
 					:id="'card_' + card.id"
 					class="card-cell"
+					:class="{ selected: showTurnPrep && newMatchingCardIds.has(card.id), selectable: canSelectCard(card) }"
+					@click="toggleSelectCard(card)"
 					:style="{ width: cardWidth + '%', 'padding-top': cardWidth * .60 + '%' }"
 				>
 					<Card :card="card" />
 				</div>
 			</div>
-
-			<br>
-
-			<div
-				id="bottomBar"
-				v-if="gameStore.isHost || userCaptainOfTeam"
-			>
-				<div style="display: flex; justify-content: flex-start;">
-				</div>
-				<div>
-					<!-- Just here for spacing -->
-				</div>
-				<div style="display: flex; justify-content: flex-end;">
-				</div>
-			</div>
-
 		</div>
 	</div>
 
@@ -333,7 +332,10 @@ export default {
 
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style
+	scoped
+	lang="scss"
+>
 div#boardWrapper {
 	min-height: calc(100vh - 7rem);
 	width: 140vh;
@@ -398,8 +400,39 @@ div#playArea {
 	flex-grow: 1;
 	position: relative;
 	padding-top: 10%;
+	transition: 200ms;
 }
 
+.selecting .card-cell {
+	position: relative;
+
+	&:not(.selectable) {
+		opacity: .7;
+		transform: scale(.9);
+	}
+
+	&.selected::after {
+		font-family: 'Material Icons';
+		content: "check";
+		font-feature-settings: 'liga';
+
+		position: absolute;
+		bottom: 0.25rem;
+		right: 0.5rem;
+		font-size: 2em;
+		color: limegreen;
+		filter: drop-shadow(1px 1px 1px #0002);
+	}
+
+	&.selectable {
+		cursor: pointer;
+
+		&:not(.selected) {
+			transform: scale(0.95);
+			opacity: 1;
+		}
+	}
+}
 
 
 #roundSummary {

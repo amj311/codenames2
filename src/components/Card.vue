@@ -130,7 +130,7 @@ export default {
 		<div class="card">
 			<div
 				class="card-face front ui-raised"
-				:class="{ 'ui-pressable': !card.revealed && !freeRotate }"
+				:class="{ 'ui-pressable': !card.revealed && !freeRotate && canFlip }"
 				@click="doFlipCard"
 			>
 				<div
@@ -278,6 +278,19 @@ export default {
 	justify-content: center;
 	user-select: none;
 	font-size: .8em;
+}
+
+
+.flipped .front::after {
+	font-family: 'Material Icons';
+	content: "sync";
+	font-feature-settings: 'liga';
+
+	position: absolute;
+	bottom: 0.5rem;
+	right: 0.5rem;
+	font-size: 1em;
+	filter: drop-shadow(1px 1px 1px #0002);
 }
 
 .back {

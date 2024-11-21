@@ -120,7 +120,7 @@ app.post('/api/room/:id/room-action/:action', async (req, res) => {
 	const { userId, data } = req.body;
 	const roomMatch = rooms.get(id);
 	if (roomMatch) {
-		const actionRes = await roomMatch.doRoomAction(userId, action, data);
+		const actionRes = await roomMatch.doRoomAction(action, data, userId);
 		return res.json({
 			success: true,
 			actionRes,
@@ -137,7 +137,7 @@ app.post('/api/room/:id/game-action/:action', async (req, res) => {
 	const { userId, data } = req.body;
 	const roomMatch = rooms.get(id);
 	if (roomMatch) {
-		const actionRes = await roomMatch.doGameAction(userId, action, data);
+		const actionRes = await roomMatch.doGameAction(action, data, userId);
 		return res.json({
 			success: true,
 			actionRes,

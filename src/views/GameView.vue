@@ -55,6 +55,7 @@ async function attemptJoinRoom() {
 		roomIsClosed.value = false;
 	}
 	catch (err) {
+		console.log(err);
 		roomIsClosed.value = true;
 	}
 }

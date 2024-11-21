@@ -17,6 +17,15 @@ const defaultConfig = {
 	numBystanders: 6,
 };
 
+type Turn = {
+	turnCount: number,
+	teamId: string,
+	hint: string,
+	hintExplanation?: string,
+	matchingCardIds: string[],
+	revealedCardIds: string[],
+}
+
 export default class Game {
 	public room!: GameRoom;
 	public config = defaultConfig;
@@ -24,6 +33,8 @@ export default class Game {
 	public teams!: Record<string, Team>;
 	public cards: Card[] = [];
 
+	public turnHistory: Turn[] = [];
+	public currentTurn: Turn | null = null;
 	public teamOfTurn: Team | null = null;
 	public hintOfTurn = '';
 	public numHintMatches: 0;
@@ -68,6 +79,7 @@ export default class Game {
 
 	private configure(config = null) {
 		this.config = this.sanitizeConfig(config || defaultConfig);
+		console.log(config, this.config)
 		this.configureTeams();
 	}
 
@@ -100,15 +112,15 @@ export default class Game {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const game = this;
 		return {
-			configure(userId, { config, customWords }) {
+			configure({ config, customWords }) {
 				game.configure(config);
 				game.usingCustomWords = customWords;
 			},
 
-			makeUserCaptain(_, { teamCode, userId }) {
+			makeUserCaptain({ teamCode, userId }) {
 				game.teams[teamCode].captainId = userId;
 			},
-			removeTeamCaptain(_, { teamCode }) {
+			removeTeamCaptain({ teamCode }) {
 				game.teams[teamCode].captainId = null;
 			},
 
@@ -127,7 +139,7 @@ export default class Game {
 				if (game.config.numTeams > 1) {
 					firstTeamId = Math.random() > (1 / game.config.numTeams) ? game.teams.teamTwo.id : game.teams.teamOne.id;
 				}
-				game.enterTeamTurnPrep(firstTeamId);
+				game.advanceTurn(firstTeamId);
 			},
 
 			// endGame() {
@@ -140,11 +152,14 @@ export default class Game {
 				game.actions.resetGame();
 			},
 
-			startGuessing(_, { hint, numHintMatches }) {
+			startGuessing({ hint, matchingCardIds }) {
 				game.state = GameStates.guessing;
 				game.numMatchesFound = 0;
 				game.hintOfTurn = hint;
-				game.numHintMatches = numHintMatches;
+				game.numHintMatches = matchingCardIds.length;
+
+				game.currentTurn!.hint = hint;
+				game.currentTurn!.matchingCardIds = matchingCardIds;
 
 				// notify players other than the current captain
 				const teamOfTurn = game.teams[game.teamOfTurn!.id];
@@ -152,7 +167,7 @@ export default class Game {
 				game.room.gameInterface.notifyBatch(users.map(({ id }) => ({ userId: id, notification: { title: 'The next hint is ready!' } })));
 			},
 
-			revealCard(_, { cardId }) {
+			revealCard({ cardId }) {
 				game.revealCard(cardId);
 			},
 
@@ -161,11 +176,7 @@ export default class Game {
 			},
 
 			async advanceTurn() {
-				let nextTeamId = game.teams.teamOne.id;
-				if (game.config.mode === 'classic') {
-					nextTeamId = game.teamOfTurn!.id === game.teams.teamOne.id ? game.teams.teamTwo.id : game.teams.teamOne.id;
-				}
-				game.enterTeamTurnPrep(nextTeamId);
+				game.advanceTurn();
 			},
 
 			resetGame() {
@@ -184,29 +195,6 @@ export default class Game {
 			}
 		}
 	}
-
-	async enterTeamTurnPrep(teamId: string) {
-		const previousHint = this.hintOfTurn;
-		this.teamOfTurn = this.teams[teamId];
-		this.numMatchesFound = 0;
-		this.turnCount++;
-		this.hintOfTurn = '';
-		this.numHintMatches = 0;
-		this.state = GameStates.turnPrep;
-
-		if (this.teamOfTurn.captainId === AI_CODEMASTER) {
-			// allow this to complete asynchronously
-			this.attemptAiHint(previousHint);
-		}
-		else {
-			// alert captain to give hint
-			const captainId = this.teamOfTurn.captainId;
-			await this.room.gameInterface.notifyUser(captainId, { title: 'Time to give your team a hint!' });
-		}
-
-		return;
-	}
-
 
 	revealCard(cardId) {
 		const card = this.getCardById(cardId);
@@ -230,7 +218,7 @@ export default class Game {
 
 		// bystander ends turn
 		else if (cardSuite.id === 'bystander') {
-			this.actions.advanceTurn();
+			this.advanceTurn();
 		}
 
 		else if (cardTeam) {
@@ -242,9 +230,48 @@ export default class Game {
 
 			// next turn
 			else if (!cardBelongsToTeamOfTurn || this.numMatchesFound > this.numHintMatches) {
-				this.actions.advanceTurn();
+				this.advanceTurn();
 			}
 		}
+	}
+
+	async advanceTurn(teamId?: string) {
+		let nextTeamId = teamId || this.teams.teamOne.id;
+		if (!teamId && this.config.mode === 'classic') {
+			nextTeamId = this.teamOfTurn!.id === this.teams.teamOne.id ? this.teams.teamTwo.id : this.teams.teamOne.id;
+		}
+
+		this.turnCount++;
+		this.teamOfTurn = this.teams[nextTeamId];
+		console.log(nextTeamId);
+		console.log(this.teamOfTurn);
+
+		const previousHint = this.hintOfTurn;
+		this.hintOfTurn = '';
+		this.numHintMatches = 0;
+		this.numMatchesFound = 0;
+		this.state = GameStates.turnPrep;
+
+		this.currentTurn = {
+			teamId: nextTeamId,
+			turnCount: this.turnCount,
+			hint: '',
+			hintExplanation: '',
+			matchingCardIds: [],
+			revealedCardIds: [],
+		};
+		this.turnHistory.push(this.currentTurn);
+
+		if (this.teamOfTurn.captainId === AI_CODEMASTER) {
+			// allow this to complete asynchronously
+			this.attemptAiHint(previousHint);
+		}
+		else {
+			// alert captain to give hint
+			const captainId = this.teamOfTurn.captainId;
+			await this.room.gameInterface.notifyUser(captainId, { title: 'Time to give your team a hint!' });
+		}
+
 	}
 
 	setEndGame(card, winningTeam) {
@@ -254,18 +281,6 @@ export default class Game {
 		// notify players
 		this.room.gameInterface.notifyAll({ title: 'The game is over!', body: 'Come see how it ended' });
 	}
-
-	// setTeamCaptain(setAsCaptain, teamCode, user) {
-	//     if (!setAsCaptain || !teamCode) {
-	//         if (this.teams.teamOne.captainId == user.id) this.teams.teamOne.captain = null
-	//         if (this.teams.teamTwo.captainId == user.id) this.teams.teamTwo.captain = null
-	//     } else {
-	//         this.setTeamCaptain(false, null, user)
-	//         if (this.teams[teamCode]);
-	//         this.teams[teamCode].captain = user
-	//     }
-	//     return this
-	// }
 
 	getCardTeam(card) {
 		const team = Array.from(Object.values(this.teams)).find((t) => t.id == card.suiteId)
@@ -309,7 +324,7 @@ export default class Game {
 			};
 			// Sometimes the AI disagrees with itself. In that case just send it as one match
 			const numMatches = Math.max(hint.matchingWords.length, 1);
-			this.actions.startGuessing(null, { hint: hint.hint, numHintMatches: numMatches });
+			this.actions.startGuessing({ hint: hint.hint, numHintMatches: numMatches });
 			this.aiHintLog.push({
 				hint: hint.hint,
 				matchingWords: hint.matchingWords,
