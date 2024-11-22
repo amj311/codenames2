@@ -24,6 +24,9 @@ type Turn = {
 	hintExplanation?: string,
 	matchingCardIds: string[],
 	revealedCardIds: string[],
+	turnStartTime: number,
+	hintGivenTime?: number,
+	turnEndTime?: number
 }
 
 export default class Game {
@@ -158,6 +161,7 @@ export default class Game {
 
 				game.currentTurn.hint = hint;
 				game.currentTurn.matchingCardIds = matchingCardIds;
+				game.currentTurn.hintGivenTime = Date.now();
 
 				// notify players other than the current captain
 				const users = Array.from(game.room.users.values()).filter(user => user.id !== game.teamOfTurn.captainId);
@@ -236,6 +240,9 @@ export default class Game {
 			nextTeamId = this.teamOfTurn!.id === this.teams.teamOne.id ? this.teams.teamTwo.id : this.teams.teamOne.id;
 		}
 
+		if (this.currentTurn) {
+			this.currentTurn.turnEndTime = Date.now();
+		}
 		const previousHint = this.currentTurn?.hint;
 
 		this.currentTurn = {
@@ -245,6 +252,7 @@ export default class Game {
 			hintExplanation: '',
 			matchingCardIds: [],
 			revealedCardIds: [],
+			turnStartTime: Date.now(),
 		};
 		this.turnHistory.push(this.currentTurn);
 		this.turnCount++;
@@ -263,6 +271,7 @@ export default class Game {
 	}
 
 	setEndGame(card, winningTeam) {
+		this.currentTurn!.turnEndTime = Date.now();
 		this.winner = winningTeam;
 		this.winningCard = card;
 		this.state = GameStates.gameOver;

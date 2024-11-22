@@ -204,7 +204,7 @@ export default {
 				>
 					<div v-if="showTurnPrep">
 						<div style="margin-bottom: 1em">
-							Write a hint and select which cards it matches!
+							Write a hint and select which words it matches!
 						</div>
 						<input
 							type="text"

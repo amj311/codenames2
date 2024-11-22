@@ -6,8 +6,10 @@ import SwapView from '@/components/SwapView.vue';
 import { useGameStore } from '@/stores/game.store';
 import GameSetupView from './GameSetupView.vue';
 import GamePlayView from './GamePlayView.vue';
+import { CardSuites } from '../../lib/constants';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, RouterLink } from 'vue-router';
+import DigitTicker from '@/components/DigitTicker.vue';
 
 const router = useRouter();
 
@@ -118,7 +120,7 @@ async function saveUsername() {
 					style="width: 7rem"
 				/></RouterLink>
 			<template v-if="gameStore.gameState">
-				<div style="display: flex; flex-grow: 1; gap: 0rem">
+				<div style="display: flex; align-items: center; flex-grow: 1; gap: 0rem">
 					<div id="roomCode">
 						<i class="material-icons">tap_and_play</i>
 						&nbsp;
@@ -145,6 +147,16 @@ async function saveUsername() {
 						:style="{ color: gameStore.teamOfTurn.color }"
 					>
 						{{ gameStore.teamOfTurn.name }}'s Turn
+					</div>
+					<div
+						v-if="gameStore.gameState.config.mode === 'high score' && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
+						style="display: flex; align-items: center; font-weight: bold;"
+					>
+						<i
+							class="material-icons ui-shiny"
+							:style="{ color: CardSuites.bystander.color, fontSize: '1.5em' }"
+						>star</i>&nbsp;
+						<DigitTicker :qty="gameStore.score.totalTurnPoints" />
 					</div>
 
 					<div

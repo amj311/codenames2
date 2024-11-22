@@ -119,7 +119,7 @@ export default class GameRoom {
 					const user = room.users.get(userId);
 					const subscription = room.pushSubscriptions.get(userId);
 					if (!user || !subscription) {
-						console.warn('Cannot notify: user or subscription not found', user, subscription);
+						console.warn('Cannot notify: user or subscription not found');
 						return false;
 					};
 					if (!room.shouldNotifyUser(userId)) {
