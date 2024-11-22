@@ -149,7 +149,7 @@ export default {
 
 		customDecksTrigger() {
 			return JSON.stringify(this.customDecks);
-		}
+		},
 	},
 
 	watch: {
@@ -259,6 +259,10 @@ export default {
 			catch (err) {
 				console.error(err);
 			}
+		},
+
+		isActive(user) {
+			return user.connection.lastPing > Date.now() - 1000;
 		}
 	},
 
@@ -269,79 +273,82 @@ export default {
 	<div id="setup">
 		<div id="teams">
 			<div
-				id="codeMasterDisplay"
 				class="ui-block"
+				style="display: flex; flex-wrap: wrap"
 			>
-				<h3>Codemasters</h3>
-				<!-- <div v-if="codeMasters.length > 0">
-          <div id="teamLists">
-            <div
-              class="teamList"
-              v-for="teamData in codeMasters"
-              :key="teamData.teamId"
-            >
-              <div
-                class="playerCard ui-shiny"
-                v-if="teamData.captainId"
-              >
-                <img :src="gameState.teams[teamData.teamId].img">
-                <div>{{ teamData.captainId.username }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
+				<div style="flex-grow: 1; min-width: 50%;">
+					<h3>Codemasters</h3>
 
-        <div v-else>No codemasters have joined yet.</div> -->
-
-				<div
-					class="form-row"
-					id="teamSelect"
-				>
 					<div
-						class="team-caption-option"
-						:class="{
-							'no-captain': !gameState.teams[teamCode].captainId,
-							'is-captain': gameStore.userCaptainOfTeam
-						}"
-						v-for="teamCode in teamCaptainOptions"
-						:key="teamCode"
+						class="form-row"
+						id="teamSelect"
 					>
 						<div
-							style="display: flex; flex-direction: column; align-items: center;"
-							:class="{ 'disabled': userCaptainOfTeam || gameState.teams[teamCode].captainId }"
-							@click="() => claimCaptain(teamCode)"
+							class="team-caption-option"
+							:class="{
+								'no-captain': !gameState.teams[teamCode].captainId,
+								'is-captain': gameStore.userCaptainOfTeam
+							}"
+							v-for="teamCode in teamCaptainOptions"
+							:key="teamCode"
 						>
 							<div
-								class="ninja ui-shiny ui-raised"
-								:class="`bg-ninja-${appStore.teamImgs[teamCode] + (gameState.teams[teamCode].captainId === AI_CODEMASTER ? '-ai' : '')}`"
-								width="50"
-							/>
-							<div v-if="gameState.teams[teamCode].captainId">
-								<span>{{ gameState.teams[teamCode].captainId === AI_CODEMASTER ? 'AI Codemaster' :
-									gameStore.getUserById(gameState.teams[teamCode].captainId).username }}</span>
-								<span
-									v-if="gameState.teams[teamCode].captainId === user.id
-										|| gameState.teams[teamCode].captainId === AI_CODEMASTER
-										|| gameStore.isHost"
-									class="remove-captain"
-									@click.stop="() => removeTeamCaptain(teamCode)"
-								>
-									<i class="material-icons">cancel</i>
-								</span>
+								style="display: flex; flex-direction: column; align-items: center;"
+								:class="{ 'disabled': userCaptainOfTeam || gameState.teams[teamCode].captainId }"
+								@click="() => claimCaptain(teamCode)"
+							>
+								<div
+									class="ninja ui-shiny ui-raised"
+									:class="`bg-ninja-${appStore.teamImgs[teamCode] + (gameState.teams[teamCode].captainId === AI_CODEMASTER ? '-ai' : '')}`"
+									width="50"
+								/>
+								<div v-if="gameState.teams[teamCode].captainId">
+									<span>{{ gameState.teams[teamCode].captainId === AI_CODEMASTER ? 'AI Codemaster' :
+										gameStore.getUserById(gameState.teams[teamCode].captainId).username }}</span>
+									<span
+										v-if="gameState.teams[teamCode].captainId === user.id
+											|| gameState.teams[teamCode].captainId === AI_CODEMASTER
+											|| gameStore.isHost"
+										class="remove-captain"
+										@click.stop="() => removeTeamCaptain(teamCode)"
+									>
+										<i class="material-icons">cancel</i>
+									</span>
+								</div>
+								<div v-else>
+									<div v-if="!userCaptainOfTeam">Click to be codemaster</div>
+									<div v-else>No codemaster yet</div>
+								</div>
 							</div>
-							<div v-else>
-								<div v-if="!userCaptainOfTeam">Click to be codemaster</div>
-								<div v-else>No codemaster yet</div>
-							</div>
+							<button
+								v-if="!gameState.teams[teamCode].captainId"
+								@click.stop="() => makeAiCaptain(teamCode)"
+								class="text"
+							><i class="material-icons-outlined">smart_toy</i>Use AI</button>
 						</div>
-						<button
-							v-if="!gameState.teams[teamCode].captainId"
-							@click.stop="() => makeAiCaptain(teamCode)"
-							class="text"
-						><i class="material-icons-outlined">smart_toy</i>Use AI</button>
 					</div>
+
 				</div>
 
+
+				<div style="flex-grow: 1;">
+					<h3>Players</h3>
+
+					<div style="margin-top: 1rem;">
+						<div
+							class="player-card"
+							v-for="user in gameStore.roomState.users"
+							:key="user.id"
+						>
+							{{ user.username || 'Joining...' }}
+							<div
+								class="active-indicator"
+								:class="{ active: isActive(user) }"
+							/>
+						</div>
+					</div>
+
+				</div>
 			</div>
 		</div>
 
@@ -578,7 +585,10 @@ export default {
 
 
 
-<style scoped>
+<style
+	scoped
+	lang="scss"
+>
 #setup {
 	min-height: calc(100vh - 7rem);
 	max-width: 65rem;
@@ -623,12 +633,25 @@ div#teamLists {
 	flex-wrap: wrap;
 }
 
-.playerCard {
-	font-size: .8em;
-	display: inline-block;
-	text-align: center;
-	padding: .5em;
-	width: min-content;
+.player-card {
+	display: inline-flex;
+	border: 1px solid #ddd;
+	border-radius: .5em;
+	padding: .3em .5em;
+	align-items: center;
+	gap: .5em;
+	margin: 0 .5em .5em 0;
+
+	.active-indicator {
+		aspect-ratio: 1;
+		width: 0.45em;
+		border-radius: 50%;
+		background-color: #ccc;
+
+		&.active {
+			background-color: limegreen;
+		}
+	}
 }
 
 .playerCard img {

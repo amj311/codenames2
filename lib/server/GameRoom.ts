@@ -30,7 +30,7 @@ export default class GameRoom {
 
 	private createHostUser() {
 		const host = this.registerNewUser({
-			username: 'Host',
+			username: '',
 			isPlayer: true,
 		});
 		this.hostUserId = host.id;

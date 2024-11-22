@@ -180,7 +180,7 @@ button.text:hover,
 	background-color: #0001;
 }
 
-.button[disabled='disabled'],
+button[disabled],
 .button[disabled] {
 	pointer-events: none;
 	opacity: 0.8;

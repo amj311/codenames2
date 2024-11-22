@@ -235,6 +235,7 @@ async function saveUsername() {
 			<button
 				class="ui-pressable ui-shiny ui-raised"
 				@click="saveUsername"
+				:disabled="!tmpUsername"
 			>Save</button>
 		</div>
 	</div>
