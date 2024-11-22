@@ -142,9 +142,9 @@ async function saveUsername() {
 					<div
 						v-if="gameStore.gameState.config.mode === 'classic' && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
 						style="display: flex; align-items: center; font-weight: bold;"
-						:style="{ color: gameStore.gameState.teamOfTurn.color }"
+						:style="{ color: gameStore.teamOfTurn.color }"
 					>
-						{{ gameStore.gameState.teamOfTurn.name }}'s Turn
+						{{ gameStore.teamOfTurn.name }}'s Turn
 					</div>
 
 					<div

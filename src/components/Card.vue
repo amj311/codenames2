@@ -21,6 +21,7 @@ export default {
 	computed: {
 		...mapStores(useGameStore, useAppStore),
 
+
 		showTeamImg() {
 			return this.gameStore.gameState.winningCard && this.gameStore.gameState.winningCard.id === this.card.id;
 		},
@@ -33,7 +34,7 @@ export default {
 				!this.card.revealed &&
 				this.gameStore.gameState.state.canRevealCard &&
 				(
-					this.gameStore.userCaptainOfTeam && this.gameStore.gameState.teamOfTurn?.id === this.gameStore.userCaptainOfTeam?.id
+					this.gameStore.userCaptainOfTeam && this.gameStore.teamOfTurn?.id === this.gameStore.userCaptainOfTeam?.id
 					|| this.gameStore.gameState.config.numTeams === 1
 				)
 			)

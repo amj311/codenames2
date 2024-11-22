@@ -37,6 +37,9 @@ export default {
 		currentTurn() {
 			return this.gameState.currentTurn;
 		},
+		teamOfTurn() {
+			return this.gameStore.teamOfTurn;
+		},
 		gameConfig() {
 			return this.gameState.config;
 		},
@@ -66,15 +69,15 @@ export default {
 			return (
 				this.gameStore.isHost ||
 				this.gameState.config.numTeams === 1 ||
-				(this.userCaptainOfTeam && this.gameState.state.canRevealCard && this.gameState.teamOfTurn?.id === this.userCaptainOfTeam.id)
+				(this.userCaptainOfTeam && this.gameState.state.canRevealCard && this.teamOfTurn?.id === this.userCaptainOfTeam.id)
 			)
 		},
 		showTurnPrep() {
 			return this.gameState.state.name === 'turnPrep'
-				&& this.userCaptainOfTeam && this.gameState.teamOfTurn?.id === this.userCaptainOfTeam.id;
+				&& this.userCaptainOfTeam && this.teamOfTurn?.id === this.userCaptainOfTeam.id;
 		},
 		numCardsRemainingForTeamOfTurn() {
-			return this.gameState.cards.filter(c => c.suiteId === this.gameState.teamOfTurn.id && !c.revealed).length;
+			return this.gameState.cards.filter(c => c.suiteId === this.teamOfTurn.id && !c.revealed).length;
 		},
 		notificationTrigger() {
 			return JSON.stringify({
@@ -142,7 +145,7 @@ export default {
 		},
 
 		canSelectCard(card) {
-			return this.showTurnPrep && card.suiteId === this.gameState.teamOfTurn.id && !card.revealed;
+			return this.showTurnPrep && card.suiteId === this.teamOfTurn.id && !card.revealed;
 		}
 	},
 
@@ -176,12 +179,12 @@ export default {
 						id="guessCounter"
 						v-if="gameState.state.canRevealCard"
 					>
-						Found: <span style="font-weight: bold">{{ gameState.numMatchesFound }}/{{
+						Found: <span style="font-weight: bold">{{ currentTurn.revealedCardIds.length }}/{{
 							currentTurn.matchingCardIds.length }}</span>
 					</div>
 					&nbsp;
 					<div
-						v-if="gameState.numMatchesFound == gameState.numHintMatches"
+						v-if="currentTurn.revealedCardIds.length === currentTurn.matchingCardIds.length"
 						class="material-icons plus-one ui-raised ui-shiny"
 					>
 						exposure_plus_1
@@ -191,7 +194,7 @@ export default {
 						@click="initAdvanceTurn"
 						v-if="canFlip"
 						class="ui-raised ui-pressable ui-shiny inline"
-						:style="{ 'background-color': gameState.teamOfTurn.color }"
+						:style="{ 'background-color': teamOfTurn.color }"
 					>END TURN</button>
 				</div>
 				<div
@@ -213,7 +216,7 @@ export default {
 						<button
 							@click="startGuessing"
 							class="ui-raised ui-pressable ui-shiny"
-							:style="{ 'background-color': gameState.teamOfTurn.color, marginTop: '1em' }"
+							:style="{ 'background-color': teamOfTurn.color, marginTop: '1em' }"
 						>
 							GIVE HINT
 						</button>
@@ -236,7 +239,7 @@ export default {
 							style="display: flex; align-items: center; gap: .5em;"
 						>
 							<i
-								v-if="gameState.teamOfTurn.captainId === AI_CODEMASTER"
+								v-if="teamOfTurn.captainId === AI_CODEMASTER"
 								class="material-icons-outlined"
 							>
 								smart_toy
