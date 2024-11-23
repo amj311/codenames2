@@ -137,7 +137,7 @@ export const useGameStore = defineStore('game', {
 			localStorage.setItem('joinedGames', JSON.stringify(joinedGames));
 		},
 		async leaveGameRoom(rid) {
-			await this.doRoomAction('leaveRoom');
+			await this.doRoomAction('removePlayer', { userId: this.user.id });
 			this.clear();
 			this.deleteJoinedGame(rid);
 		},

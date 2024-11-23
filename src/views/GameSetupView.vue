@@ -227,6 +227,11 @@ export default {
 			}
 		},
 
+		kickUser(userId) {
+			if (!confirm("This player is not connected. Do you wish to remove them from the game?")) return;
+			this.gameStore.doRoomAction('removePlayer', { userId });
+		},
+
 		updateTeamCardsByAvailableSpace() {
 			const newConfig = { ...this.tmpConfig };
 			newConfig.numAssassins = minmax(this.tmpConfig.numAssassins, 1, 3);
@@ -263,6 +268,16 @@ export default {
 
 		isActive(user) {
 			return user.connection.lastPing > Date.now() - 1000;
+		},
+
+		copyToClipboard(str) {
+			try {
+				navigator.clipboard.writeText(str);
+				alert('Copied to clipboard!');
+			}
+			catch (err) {
+				console.error(err);
+			}
 		}
 	},
 
@@ -272,94 +287,79 @@ export default {
 <template>
 	<div id="setup">
 		<div id="teams">
-			<div
-				class="ui-block"
-				style="display: flex; flex-wrap: wrap"
-			>
-				<div style="flex-grow: 1; min-width: 50%;">
-					<h3>Codemasters</h3>
+			<div class="ui-block">
+				<h3>Codemasters</h3>
 
+				<div
+					class="form-row"
+					id="teamSelect"
+				>
 					<div
-						class="form-row"
-						id="teamSelect"
+						class="team-caption-option"
+						:class="{
+							'no-captain': !gameState.teams[teamCode].captainId,
+							'is-captain': gameStore.userCaptainOfTeam
+						}"
+						v-for="teamCode in teamCaptainOptions"
+						:key="teamCode"
 					>
 						<div
-							class="team-caption-option"
-							:class="{
-								'no-captain': !gameState.teams[teamCode].captainId,
-								'is-captain': gameStore.userCaptainOfTeam
-							}"
-							v-for="teamCode in teamCaptainOptions"
-							:key="teamCode"
+							style="display: flex; flex-direction: column; align-items: center;"
+							:class="{ 'disabled': userCaptainOfTeam || gameState.teams[teamCode].captainId }"
+							@click="() => claimCaptain(teamCode)"
 						>
 							<div
-								style="display: flex; flex-direction: column; align-items: center;"
-								:class="{ 'disabled': userCaptainOfTeam || gameState.teams[teamCode].captainId }"
-								@click="() => claimCaptain(teamCode)"
-							>
-								<div
-									class="ninja ui-shiny ui-raised"
-									:class="`bg-ninja-${appStore.teamImgs[teamCode] + (gameState.teams[teamCode].captainId === AI_CODEMASTER ? '-ai' : '')}`"
-									width="50"
-								/>
-								<div v-if="gameState.teams[teamCode].captainId">
-									<span>{{ gameState.teams[teamCode].captainId === AI_CODEMASTER ? 'AI Codemaster' :
-										gameStore.getUserById(gameState.teams[teamCode].captainId).username }}</span>
-									<span
-										v-if="gameState.teams[teamCode].captainId === user.id
-											|| gameState.teams[teamCode].captainId === AI_CODEMASTER
-											|| gameStore.isHost"
-										class="remove-captain"
-										@click.stop="() => removeTeamCaptain(teamCode)"
-									>
-										<i class="material-icons">cancel</i>
-									</span>
-								</div>
-								<div v-else>
-									<div v-if="!userCaptainOfTeam">Click to be codemaster</div>
-									<div v-else>No codemaster yet</div>
-								</div>
-							</div>
-							<button
-								v-if="!gameState.teams[teamCode].captainId"
-								@click.stop="() => makeAiCaptain(teamCode)"
-								class="text"
-							><i class="material-icons-outlined">smart_toy</i>Use AI</button>
-						</div>
-					</div>
-
-				</div>
-
-
-				<div style="flex-grow: 1;">
-					<h3>Players</h3>
-
-					<div style="margin-top: 1rem;">
-						<div
-							class="player-card"
-							v-for="user in gameStore.roomState.users"
-							:key="user.id"
-						>
-							{{ user.username || 'Joining...' }}
-							<div
-								class="active-indicator"
-								:class="{ active: isActive(user) }"
+								class="ninja ui-shiny ui-raised"
+								:class="`bg-ninja-${appStore.teamImgs[teamCode] + (gameState.teams[teamCode].captainId === AI_CODEMASTER ? '-ai' : '')}`"
+								width="50"
 							/>
+							<div v-if="gameState.teams[teamCode].captainId">
+								<span>{{ gameState.teams[teamCode].captainId === AI_CODEMASTER ? 'AI Codemaster' :
+									gameStore.getUserById(gameState.teams[teamCode].captainId).username }}</span>
+								<span
+									v-if="gameState.teams[teamCode].captainId === user.id
+										|| gameState.teams[teamCode].captainId === AI_CODEMASTER
+										|| gameStore.isHost"
+									class="remove-captain"
+									@click.stop="() => removeTeamCaptain(teamCode)"
+								>
+									<i class="material-icons">cancel</i>
+								</span>
+							</div>
+							<div v-else>
+								<div v-if="!userCaptainOfTeam">Click to be codemaster</div>
+								<div v-else>No codemaster yet</div>
+							</div>
 						</div>
+						<button
+							v-if="!gameState.teams[teamCode].captainId"
+							@click.stop="() => makeAiCaptain(teamCode)"
+							class="text"
+						><i class="material-icons-outlined">smart_toy</i>Use AI</button>
 					</div>
-
 				</div>
+
 			</div>
 		</div>
 
 		<div id="settings">
-
 			<div
 				id="joinInstructions"
 				class="ui-block"
-				v-if="gameStore.isHost"
 			>
-				<h3>Scan To Join</h3>
+				<h3>Players</h3>
+				<div style="margin: 1rem 0; display: flex; flex-wrap: wrap; gap: .5em">
+					<div
+						class="player-card"
+						:class="{ inactive: !isActive(user) }"
+						v-for="user in gameStore.roomState.users"
+						:key="user.id"
+						@click="() => !isActive(user) && canManageGame && kickUser(user.id)"
+					>
+						{{ user.username || 'Joining...' }}
+						<div class="active-indicator" />
+					</div>
+				</div>
 				<div style="text-align:center">
 					<div v-if="joinUrlQr">
 						<img
@@ -367,11 +367,16 @@ export default {
 							id="joinQR"
 						/>
 					</div>
-					<div style="margin-top: .5em;">
+					<div style="margin-top: .5em; display: flex; align-items: center; justify-content: center">
 						<a
 							:href="joinUrl"
 							target="_blank"
 						>{{ shortJoinUrl }}</a>
+						<i
+							class="material-icons"
+							style="cursor: pointer; padding: .5em"
+							@click="copyToClipboard(shortJoinUrl)"
+						>content_copy</i>
 					</div>
 				</div>
 			</div>
@@ -554,9 +559,10 @@ export default {
 			</div>
 
 			<small>
-				<p>Custom word decks are saved to your browser. If you plan on switching devices, you will need to
-					save them
-					somewhere else.</p>
+				<p>
+					Custom word decks are saved to your browser. If you plan on switching devices, you will need to save
+					them somewhere else.
+				</p>
 				<br />
 			</small>
 
@@ -640,16 +646,21 @@ div#teamLists {
 	padding: .3em .5em;
 	align-items: center;
 	gap: .5em;
-	margin: 0 .5em .5em 0;
+	user-select: none;
 
 	.active-indicator {
 		aspect-ratio: 1;
 		width: 0.45em;
 		border-radius: 50%;
-		background-color: #ccc;
+		background-color: limegreen;
+	}
 
-		&.active {
-			background-color: limegreen;
+
+	&.inactive {
+		cursor: cursor;
+
+		.active-indicator {
+			background-color: #ccc;
 		}
 	}
 }

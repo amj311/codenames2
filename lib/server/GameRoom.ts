@@ -99,7 +99,7 @@ export default class GameRoom {
 				}
 			},
 
-			leaveRoom(_, userId: string) {
+			removePlayer({ userId }) {
 				if (userId === room.hostUserId) {
 					this.hostUserId = null;
 				}
@@ -167,6 +167,12 @@ export default class GameRoom {
 	}
 
 	getRoomSummary() {
+		// use this interval to remove ghost users
+		for (const user of this.users.values()) {
+			if (!user.username && Date.now() > user.connection.lastPing + ACTIVE_USER_TIME) {
+				this.users.delete(user.id);
+			}
+		}
 		return {
 			id: this.id,
 			hostUserId: this.hostUserId,
