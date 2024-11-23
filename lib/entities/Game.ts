@@ -141,7 +141,11 @@ export default class Game {
 				if (game.config.numTeams > 1) {
 					firstTeamId = Math.random() > (1 / game.config.numTeams) ? game.teams.teamTwo.id : game.teams.teamOne.id;
 				}
+
 				game.advanceTurn(firstTeamId);
+
+				// notify all players
+				game.room.gameInterface.notifyAll({ title: `Game ${game.room.id} has started!` });
 			},
 
 			// endGame() {
