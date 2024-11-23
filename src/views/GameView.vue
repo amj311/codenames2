@@ -230,13 +230,15 @@ async function saveUsername() {
 		v-if="showUsernameModal"
 	>
 		<div class="ui-block username-modal">
-			<h3>Choose a username</h3>
-			<input v-model="tmpUsername">
-			<button
-				class="ui-pressable ui-shiny ui-raised"
-				@click="saveUsername"
-				:disabled="!tmpUsername"
-			>Save</button>
+			<form @submit.prevent="saveUsername">
+				<h3>Choose a username</h3>
+				<input v-model="tmpUsername">
+				<button
+					class="ui-pressable ui-shiny ui-raised"
+					type="submit"
+					:disabled="!tmpUsername"
+				>Save</button>
+			</form>
 		</div>
 	</div>
 

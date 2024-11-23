@@ -2,14 +2,16 @@
 // import Notification from "../utils/Notification"
 import { getCaptainsTeam } from "../../lib/services/GameHelpers"
 import { PlayableTeamIds, CardSuites, AI_CODEMASTER } from "../../lib/constants"
-import Card from '../components/Card.vue'
+import Card from '@/components/Card.vue'
 import { mapStores } from "pinia";
 import { useGameStore } from "@/stores/game.store";
 import { useAppStore } from "@/stores/app.store";
+import Scoreboard from "@/components/Scoreboard.vue";
 
 export default {
 	components: {
-		Card
+		Card,
+		Scoreboard
 	},
 
 	data() {
@@ -167,6 +169,12 @@ export default {
 <template>
 	<div id="boardWrapper">
 		<div id="playArea">
+			<div
+				v-if="gameState.config.mode === 'high score' && gameStore.score && gameState.state.isGameOver"
+				style="display: flex; justify-content: center; margin-bottom: 1rem;"
+			>
+				<Scoreboard :score="gameStore.score" />
+			</div>
 			<div id="roundSummary">
 				<div
 					id="duringTurn"
@@ -587,12 +595,4 @@ div#bottomBar>div {
 		display: inline-block;
 	}
 }
-
-
-
-
-
-
-
-#aiHintsLog {}
 </style>

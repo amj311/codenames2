@@ -227,6 +227,7 @@ export function computeGamePoints(game) {
 
 	// assumes there is only one team when playing High Scores
 	const teamId = Object.keys(game.teams)[0];
+	const teamFlippedCards = game.cards.filter((c) => c.suiteId === teamId && c.revealed);
 	const opponentCards = !teamId ? [] : game.cards.filter((c) => c.suiteId !== teamId);
 	const numOpponentCards = opponentCards.length;
 	const unflippedOpponentCards = opponentCards.filter((c) => !c.flipped).length;
@@ -242,8 +243,10 @@ export function computeGamePoints(game) {
 	const total = totalTurnPoints + breakdown.unflippedOpponentCardPoints;
 
 	// stars is not tied to high score. It is just a measurement of completion and accuracy
-	const stars =
-		turns.length === 0 ? 0 : Math.min(3, Math.floor(game.config.numTeamCards / turns.length));
+	const starThreshold = game.config.numTeamCards * 2;
+	const starAchievement = teamFlippedCards.length + ((game.config.numTeamCards) - (turns.length - 1));
+
+	const stars = 3 * (starAchievement / starThreshold);
 
 	return {
 		...breakdown,

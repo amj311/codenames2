@@ -2,7 +2,7 @@
 	setup
 	lang="ts"
 >
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, ref } from 'vue';
 
 const props = defineProps<{
 	qty: number,
@@ -15,13 +15,20 @@ const DigitItem = defineComponent({
 	props: {
 		digit: {
 			type: Number,
-			required: true
+			required: true,
 		}
 	},
 	data: () => ({
-		oldDigit: null,
-		animateFromOld: false
+		oldDigit: 0,
+		animateFromOld: false,
+		showQty: false,
 	}),
+	mounted() {
+		setTimeout(() => {
+			this.showQty = true;
+			this.animateFromOld = true;
+		}, 0)
+	},
 	computed: {
 		digitsTrack() {
 			return Array(20).fill(0).map((_, i) => (i) % 10);
@@ -52,9 +59,9 @@ const DigitItem = defineComponent({
 	template: /* html */ `
 	<div class="digit-wrapper">
 		<div
-			class="track"
+			class="digit-track"
 			:class="{ animating: animateFromOld }"
-			:style="{ top: '-' + useIdx + 'em' }"
+			:style="{ top: !showQty ? '1em': -useIdx + 'em' }"
 		>
 			<div
 				class="digit"
@@ -86,6 +93,7 @@ const DigitItem = defineComponent({
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
+	font-family: "Lexend", "math", serif;
 }
 
 .digit-item-wrapper {
@@ -94,8 +102,11 @@ const DigitItem = defineComponent({
 
 	&#dig_1000,
 	&#dig_1000000 {
+		padding-right: 2px;
+
 		&::after {
 			content: ',';
+			right: 2px;
 		}
 	}
 }
@@ -103,13 +114,13 @@ const DigitItem = defineComponent({
 .digit-wrapper {
 	position: relative;
 	overflow: hidden;
-	width: .5em;
+	width: .6em;
 	height: 1em;
 	line-height: 1em;
 	text-align: right;
 }
 
-.track {
+.digit-track {
 	position: absolute;
 	top: 0;
 

@@ -58,7 +58,7 @@ export default {
 			setTimeout(() => this.showFlip = false, 5);
 			this.waitForFreeRotate = false;
 
-			this.unMouseoverTimeout = setTimeout(() => this.mouseover = false, 2000);
+			this.unMouseoverTimeout = setTimeout(() => this.mouseover = false, 1000);
 		},
 
 		doFlipCard() {
