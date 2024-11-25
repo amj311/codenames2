@@ -93,12 +93,16 @@ async function playAgain() {
 				/></RouterLink>
 			<template v-if="gameStore.gameState">
 				<div style="display: flex; align-items: center; flex-grow: 1; gap: 0rem">
-					<div id="roomCode">
+					<div>{{ gameStore.roomState.name }}</div>
+					<div style="flex-grow: 1"></div>
+					<div
+						id="roomCode"
+						v-if="!gameStore.gameState.state.isInPlay"
+					>
 						<i class="material-icons">tap_and_play</i>
 						&nbsp;
-						{{ gameStore.roomState.name }}
+						<span class="code-cap text-code">{{ gameStore.gameRoomId }}</span>
 					</div>
-					<div style="flex-grow: 1"></div>
 					<div
 						v-if="gameStore.gameState.config.mode === 'classic' && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
 						style="display: flex; align-items: center; font-weight: bold;"
@@ -216,7 +220,13 @@ async function playAgain() {
 	font-weight: bold;
 	flex-wrap: wrap;
 	justify-content: space-around;
+	letter-spacing: .1rem;
 }
+
+.code-cap {
+	text-transform: uppercase;
+}
+
 
 
 .disconnect-toast {
