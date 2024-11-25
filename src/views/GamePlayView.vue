@@ -111,6 +111,7 @@ export default {
 		},
 
 		initAdvanceTurn() {
+			if (!confirm("Are you sure you want to end this turn turn?")) return;
 			this.gameStore.doGameAction('advanceTurn', {})
 		},
 
