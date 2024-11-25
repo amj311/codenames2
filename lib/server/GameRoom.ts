@@ -1,5 +1,6 @@
 import Game from '../entities/Game.js';
 import UserConnection from '../entities/UserConnection.js';
+import { getRandomName } from '../services/RoomNameService.js';
 import UniqueIdManager from '../services/UniqueIdManager.js';
 import webpush from 'web-push';
 
@@ -16,6 +17,7 @@ type User = {
 
 export default class GameRoom {
 	id!: string;
+	name!: string;
 	game!: Game;
 	users = new Map<string, User>();
 	pushSubscriptions = new Map();
@@ -24,6 +26,7 @@ export default class GameRoom {
 
 	constructor(id: string) {
 		this.id = id;
+		this.name = getRandomName();
 		this.game = new Game(this);
 		this.createHostUser();
 	}
@@ -83,7 +86,6 @@ export default class GameRoom {
 				};
 				if (pushSubscription) {
 					room.pushSubscriptions.set(userId, pushSubscription);
-					console.log(pushSubscription, room.pushSubscriptions)
 				}
 				user.connection.ping();
 				user.isActiveTab = isActiveTab;
@@ -175,6 +177,7 @@ export default class GameRoom {
 		}
 		return {
 			id: this.id,
+			name: this.name,
 			hostUserId: this.hostUserId,
 			players: this.getPlayers(),
 			users: Array.from(this.users.values()),

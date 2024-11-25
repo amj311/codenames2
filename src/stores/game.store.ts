@@ -25,8 +25,8 @@ export const useGameStore = defineStore('game', {
 		async newGame() {
 			this.clear();
 			const { data } = await api.post('/room/new');
-			this.upsertJoinedGame({ gameRoomId: data.rid, userId: data.hostUser.id });
-			return data.rid;
+			this.upsertJoinedGame({ gameRoomId: data.room.id, name: data.room.name, userId: data.hostUser.id });
+			return data.room.id;
 		},
 
 		async connectToRoom(rid: string) {
@@ -36,7 +36,7 @@ export const useGameStore = defineStore('game', {
 			});
 			this.clear();
 			this.gameRoomId = rid;
-			this.upsertJoinedGame({ gameRoomId: rid, userId: data.user.id });
+			this.upsertJoinedGame({ gameRoomId: rid, name: data.room.name, userId: data.user.id });
 			this.setUser(data.user);
 			this.setGameState(data.game);
 			this.setRoomState(data.room);
@@ -123,10 +123,11 @@ export const useGameStore = defineStore('game', {
 		getJoinedGame(rid) {
 			return this.getJoinedGames()[rid];
 		},
-		upsertJoinedGame({ gameRoomId, userId }) {
+		upsertJoinedGame({ gameRoomId, name, userId }) {
 			const joinedGames = this.getJoinedGames();
 			joinedGames[gameRoomId] = {
 				gameRoomId: gameRoomId,
+				name: name,
 				userId: userId,
 			};
 			localStorage.setItem('joinedGames', JSON.stringify(joinedGames));

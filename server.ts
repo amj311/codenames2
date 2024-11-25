@@ -67,8 +67,19 @@ function checkRoomStatus(roomId, alreadyInactive = false) {
 	}
 }
 
+function getRoom(roomId) {
+	const roomMatch = rooms.get(roomId.toUpperCase());
+	if (roomMatch) {
+		return roomMatch;
+	}
+	else {
+		console.log('Could not find room: ' + roomId);
+		return null;
+	}
+}
+
 function deleteRoom(roomId) {
-	const roomMatch = rooms.get(roomId);
+	const roomMatch = getRoom(roomId);
 	if (roomMatch) {
 		rooms.delete(roomMatch.id);
 		console.log('Deleting room ' + roomMatch.id);
@@ -83,7 +94,7 @@ function deleteRoom(roomId) {
 app.get('/api/room/:rid', (req, res) => {
 	console.log('Requested room: ' + req.params.rid);
 	const { rid } = req.params;
-	const roomMatch = rooms.get(rid);
+	const roomMatch = getRoom(rid);
 	if (roomMatch) {
 		return res.json({
 			success: true,
@@ -95,14 +106,14 @@ app.get('/api/room/:rid', (req, res) => {
 app.post('/api/room/new', (req, res) => {
 	const newRoom = createRoom();
 	console.log('Created new room: ' + newRoom.id);
-	res.json({ ok: true, rid: newRoom.id, hostUser: newRoom.hostUser });
+	res.json({ ok: true, room: newRoom.getRoomSummary(), hostUser: newRoom.hostUser });
 });
 
 
 app.post('/api/room/:id/connect', async (req, res) => {
 	const { id } = req.params;
 	const { returningUserId } = req.body;
-	const roomMatch = rooms.get(id);
+	const roomMatch = getRoom(id);
 	if (roomMatch) {
 		const joinedUser = await roomMatch.joinUser(returningUserId);
 		return res.json({
@@ -118,7 +129,7 @@ app.post('/api/room/:id/connect', async (req, res) => {
 app.post('/api/room/:id/room-action/:action', async (req, res) => {
 	const { id, action } = req.params;
 	const { userId, data } = req.body;
-	const roomMatch = rooms.get(id);
+	const roomMatch = getRoom(id);
 	if (roomMatch) {
 		const actionRes = await roomMatch.doRoomAction(action, data, userId);
 		return res.json({
@@ -135,7 +146,7 @@ app.post('/api/room/:id/room-action/:action', async (req, res) => {
 app.post('/api/room/:id/game-action/:action', async (req, res) => {
 	const { id, action } = req.params;
 	const { userId, data } = req.body;
-	const roomMatch = rooms.get(id);
+	const roomMatch = getRoom(id);
 	if (roomMatch) {
 		const actionRes = await roomMatch.doGameAction(action, data, userId);
 		return res.json({

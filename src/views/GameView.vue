@@ -34,12 +34,6 @@ const currentView = computed(() => {
 	return Views.Loading;
 })
 
-watch(computed(() => gameStore.user), () => {
-	if (gameStore.user && !gameStore.user.username && !showUsernameModal.value) {
-		openUsernameModal();
-	}
-});
-
 onMounted(async () => {
 	attemptJoinRoom();
 })
@@ -87,28 +81,6 @@ async function playAgain() {
 	await gameStore.doGameAction('resetGame');
 }
 
-
-const showUsernameModal = ref(false);
-const tmpUsername = ref('');
-
-function openUsernameModal() {
-	tmpUsername.value = gameStore.user?.username;
-	showUsernameModal.value = true;
-}
-
-async function saveUsername() {
-	try {
-		const data = {
-			username: tmpUsername.value,
-		};
-		await gameStore.doRoomAction('updateUserData', data);
-		showUsernameModal.value = false;
-	}
-	catch (err) {
-		console.error(err);
-	}
-}
-
 </script>
 
 <template>
@@ -124,23 +96,9 @@ async function saveUsername() {
 					<div id="roomCode">
 						<i class="material-icons">tap_and_play</i>
 						&nbsp;
-						<span class="code-cap">{{ gameStore.gameRoomId }}</span>
+						{{ gameStore.roomState.name }}
 					</div>
 					<div style="flex-grow: 1"></div>
-					<div
-						v-if="!gameStore.gameState.state.isInPlay"
-						@click="openUsernameModal"
-						class="button text"
-						style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
-					>
-						<i class="material-icons">person</i>&nbsp;
-						<span
-							class="user-username"
-							style="display: flex; align-items: center; justify-content: center;"
-						>
-							{{ gameStore.user?.username }}
-						</span>
-					</div>
 					<div
 						v-if="gameStore.gameState.config.mode === 'classic' && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
 						style="display: flex; align-items: center; font-weight: bold;"
@@ -228,23 +186,6 @@ async function saveUsername() {
 	</div>
 
 	<div
-		class="modal-overlay"
-		v-if="showUsernameModal"
-	>
-		<div class="ui-block username-modal">
-			<form @submit.prevent="saveUsername">
-				<h3>Choose a username</h3>
-				<input v-model="tmpUsername">
-				<button
-					class="ui-pressable ui-shiny ui-raised"
-					type="submit"
-					:disabled="!tmpUsername"
-				>Save</button>
-			</form>
-		</div>
-	</div>
-
-	<div
 		v-if="gameStore.pingError"
 		class="ui-block disconnect-toast"
 	>
@@ -275,27 +216,7 @@ async function saveUsername() {
 	font-weight: bold;
 	flex-wrap: wrap;
 	justify-content: space-around;
-	letter-spacing: .1rem;
 }
-
-.code-cap {
-	text-transform: uppercase;
-}
-
-.username-modal {
-	position: fixed;
-	top: 50%;
-	left: 50%;
-	translate: -50% -50%;
-	background: #fff;
-	width: calc(100% - 3rem);
-	max-width: 20rem;
-}
-
-.username-modal input {
-	font-size: 1.2em;
-}
-
 
 
 .disconnect-toast {

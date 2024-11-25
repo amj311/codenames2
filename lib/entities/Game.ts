@@ -77,7 +77,6 @@ export default class Game {
 
 	private configure(config = null) {
 		this.config = this.sanitizeConfig(config || defaultConfig);
-		console.log(config, this.config)
 		this.configureTeams();
 	}
 

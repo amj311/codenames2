@@ -33,6 +33,9 @@ export default {
 			hostUrl: new URL(window.location.href),
 			joinUrl: '',
 			joinUrlQr: '',
+
+			tmpUsername: '',
+			showUsernameModal: false,
 		})
 	},
 
@@ -40,6 +43,10 @@ export default {
 		this.customDecks = JSON.parse(localStorage.getItem('customWordDecks') || '{}');
 		this.joinUrl = this.hostUrl.origin + "/" + this.gameStore.gameRoomId!;
 		this.joinUrlQr = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(this.joinUrl);
+
+		if (this.gameStore.user && !this.gameStore.user.username) {
+			this.openUsernameModal();
+		}
 	},
 
 
@@ -264,6 +271,15 @@ export default {
 			}
 		},
 
+		handleUserClick(user) {
+			if (user.id === this.gameStore.user.id) {
+				this.openUsernameModal();
+			};
+			if (!this.isActive(user) && this.canManageGame) {
+				this.kickUser(user.id)
+			}
+		},
+
 		isActive(user) {
 			return user.connection.lastPing > Date.now() - 1000;
 		},
@@ -272,6 +288,28 @@ export default {
 			try {
 				navigator.clipboard.writeText(str);
 				alert('Copied to clipboard!');
+			}
+			catch (err) {
+				console.error(err);
+			}
+		},
+
+
+		openUsernameModal() {
+			const cachedName = localStorage.getItem('username');
+			this.tmpUsername = this.gameStore.user?.username || cachedName || '';
+			this.showUsernameModal = true;
+		},
+
+		async saveUsername() {
+			try {
+				const data = {
+					username: this.tmpUsername,
+				};
+				await this.gameStore.doRoomAction('updateUserData', data);
+				this.showUsernameModal = false;
+				localStorage.setItem('username', this.tmpUsername);
+				this.tmpUsername = '';
 			}
 			catch (err) {
 				console.error(err);
@@ -349,13 +387,20 @@ export default {
 				<div style="margin: 1rem 0; display: flex; flex-wrap: wrap; gap: .5em">
 					<div
 						class="player-card"
-						:class="{ inactive: !isActive(user) }"
+						:class="{ inactive: !isActive(user), me: user.id === gameStore.user.id }"
 						v-for="user in gameStore.roomState.users"
 						:key="user.id"
-						@click="() => !isActive(user) && canManageGame && kickUser(user.id)"
+						@click="() => handleUserClick(user)"
 					>
 						{{ user.username || 'Joining...' }}
-						<div class="active-indicator" />
+						<i
+							v-if="user.id === gameStore.user.id"
+							class="material-icons"
+						>edit</i>
+						<div
+							v-else
+							class="active-indicator"
+						/>
 					</div>
 				</div>
 				<div style="text-align:center">
@@ -584,6 +629,24 @@ export default {
 
 		</div>
 	</div>
+
+
+	<div
+		class="modal-overlay"
+		v-if="showUsernameModal"
+	>
+		<div class="ui-block username-modal">
+			<form @submit.prevent="saveUsername">
+				<h3>Choose a username</h3>
+				<input v-model="tmpUsername">
+				<button
+					class="ui-pressable ui-shiny ui-raised"
+					type="submit"
+					:disabled="!tmpUsername"
+				>Save</button>
+			</form>
+		</div>
+	</div>
 </template>
 
 
@@ -653,10 +716,13 @@ div#teamLists {
 		background-color: limegreen;
 	}
 
+	&.inactive,
+	&.me {
+		cursor: pointer;
+	}
+
 
 	&.inactive {
-		cursor: cursor;
-
 		.active-indicator {
 			background-color: #ccc;
 		}
@@ -782,5 +848,20 @@ div#customDeckModal {
 	translate: -50% -50%;
 	width: 95%;
 	max-width: 45rem;
+}
+
+
+.username-modal {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+	background: #fff;
+	width: calc(100% - 3rem);
+	max-width: 20rem;
+}
+
+.username-modal input {
+	font-size: 1.2em;
 }
 </style>
