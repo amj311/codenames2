@@ -40,8 +40,6 @@ export default {
 		this.customDecks = JSON.parse(localStorage.getItem('customWordDecks') || '{}');
 		this.joinUrl = this.hostUrl.origin + "/" + this.gameStore.gameRoomId!;
 		this.joinUrlQr = "https://api.qrserver.com/v1/create-qr-code/?data=" + encodeURIComponent(this.joinUrl);
-
-		this.notificationsOn = this.appStore.hasNotificationPermission;
 	},
 
 
@@ -234,7 +232,7 @@ export default {
 
 		updateTeamCardsByAvailableSpace() {
 			const newConfig = { ...this.tmpConfig };
-			newConfig.numAssassins = minmax(this.tmpConfig.numAssassins, 1, 3);
+			newConfig.numAssassins = minmax(this.tmpConfig.numAssassins, 0, 3);
 			newConfig.numTeamCards = minmax(this.tmpConfig.numTeamCards, 1, this.maxCompTeamQty);
 			this.pushTmpConfig(newConfig);
 		},

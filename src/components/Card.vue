@@ -140,7 +140,7 @@ export default {
 					:style="{ backgroundColor: card.color }"
 				></div>
 				<div class="word-wrapper">
-					<div class="word">{{ card.word }}</div>
+					<div class="word text-code">{{ card.word }}</div>
 					<div
 						class="flip-confirm"
 						:class="{ visible: showFlip }"

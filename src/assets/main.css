@@ -315,3 +315,10 @@ img.ui-raised {
 	z-index: 100;
 	backdrop-filter: blur(2px);
 }
+
+.text-bold {
+	font-weight: bold;
+}
+.text-code {
+	font-family: 'Lexend', 'math', serif;
+}

@@ -1,8 +1,8 @@
 Mercury
 roulette
 Aztec
-Maple
-Tower
+maple
+tower
 poison
 kid
 wind
@@ -10,26 +10,26 @@ cotton
 fish
 band
 fire
-Opera
+opera
 pyramid
 cross
 seal
 stream
 night
-Orange
-Temple
+orange
+temple
 doctor
 wall
 pants
 lemon
-Bell
+bell
 smuggler
 England
 space
 hook
 vacuum
 Atlantis
-Robin
+robin
 bridge
 shop
 needle
@@ -41,7 +41,7 @@ cricket
 cold
 snow
 trunk
-Bill
+bill
 dinosaur
 horseshoe
 honey
@@ -51,11 +51,11 @@ organ
 jam
 glass
 bear
-Shadow
+shadow
 centaur
-Park
+park
 figure
-Apple
+apple
 pool
 Africa
 scuba diver
@@ -64,7 +64,7 @@ paste
 litter
 head
 change
-Rose
+rose
 shot
 cat
 Shakespeare
@@ -92,11 +92,11 @@ thief
 ketchup
 witch
 America
-Ivory
+ivory
 mail
 point
 tube
-Buck
+buck
 agent
 press
 spine
@@ -120,13 +120,13 @@ watch
 air
 Lead
 cap
-Bank
+bank
 boom
 calf
 lion
 police
 London
-Rock
+rock
 bow
 degree
 van
@@ -138,8 +138,8 @@ limousine
 ghost
 boot
 post
-Ray
-Force
+ray
+force
 track
 ice cream
 rabbit
@@ -168,8 +168,8 @@ pass
 
 corn
 card
-Olive
-Grace
+olive
+grace
 high
 knight
 mouse
@@ -181,9 +181,9 @@ fighter
 superhero
 oil
 net
-Moon
+moon
 spring
-Court
+court
 star
 pool
 tie
@@ -200,20 +200,20 @@ diamond
 whale
 
 
-Soldier
-Berry
+soldier
+berry
 row
 pistol
 arm
 Bermuda
 knife
-Church
+church
 chocolate
 suit
 pilot
 plot
 pupil
-Spike
+spike
 scientist
 comic
 mammoth
@@ -235,7 +235,7 @@ swing
 spider
 angel
 deck
-Buffalo
+buffalo
 yard
 chest
 conductor
@@ -259,7 +259,7 @@ Giant
 Germany
 fork
 pan
-Bond
+bond
 mine
 turkey
 play
@@ -269,7 +269,7 @@ tooth
 revolution
 cook
 screen
-Fair
+fair
 fly
 pit
 porch
@@ -300,7 +300,7 @@ octopus
 log
 lochNess
 
-Robot
+robot
 embassy
 kiwi
 code
@@ -332,10 +332,10 @@ alien
 key
 Saturn
 hospital
-Forest
+forest
 bottle
 Moscow
-Palm
+palm
 stock
 death
 pumpkin
@@ -375,7 +375,7 @@ ground
 Czech
 back
 Olympus
-Ninja
+ninja
 crown
 Himalayas
 film

@@ -180,14 +180,14 @@ export default {
 					id="duringTurn"
 					v-if="gameState.state.name === 'guessing'"
 				>
-					<div id="activeTeam">Hint: <span style="font-weight: bold">{{ currentTurn.hint }}</span>
+					<div id="activeTeam">Hint: <span class="text-code">{{ currentTurn.hint }}</span>
 					</div>
 					&nbsp;&nbsp;&nbsp;
 					<div
 						id="guessCounter"
 						v-if="gameState.state.canRevealCard"
 					>
-						Found: <span style="font-weight: bold">{{ currentTurn.revealedCardIds.length }}/{{
+						Found: <span class="text-code">{{ currentTurn.revealedCardIds.length }}/{{
 							currentTurn.matchingCardIds.length }}</span>
 					</div>
 					&nbsp;
@@ -252,7 +252,8 @@ export default {
 							>
 								smart_toy
 							</i>
-							Waiting for hint...
+							Waiting for {{ teamOfTurn.captainId === AI_CODEMASTER ? 'AI codemaster' :
+								gameStore.getUserById(teamOfTurn.captainId).username }}'s hint...
 						</h3>
 					</div>
 				</div>
@@ -470,7 +471,7 @@ div#duringTurn {
 	border-radius: 50%;
 	aspect-ratio: 1;
 	width: 1.3em;
-	font-size: 1.4em;
+	font-size: 1.2em;
 	display: flex;
 	align-items: center;
 	justify-content: center;

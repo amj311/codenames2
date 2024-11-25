@@ -154,8 +154,10 @@ async function saveUsername() {
 					>
 						<i
 							class="material-icons ui-shiny"
-							:style="{ color: CardSuites.bystander.color, fontSize: '1.5em' }"
-						>star</i>&nbsp;
+							:style="{ color: CardSuites.bystander.color, fontSize: '1.2em' }"
+						>
+							star
+						</i>
 						<DigitTicker :qty="gameStore.score.totalTurnPoints" />
 					</div>
 
