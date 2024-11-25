@@ -266,6 +266,7 @@ export default {
 .word {
 	display: inline-block;
 	word-wrap: break-word;
+	text-align: center;
 }
 
 .flip-confirm {
