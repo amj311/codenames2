@@ -34,7 +34,6 @@ const common_adjectives = [
 	'Dangerous',
 	'Deadly',
 	'Double',
-	'Ethan',
 	'Fatal',
 	'Final',
 	'Ghost',

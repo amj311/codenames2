@@ -43,12 +43,6 @@ export default class Game {
 	public winningCard: Card | null = null;
 
 	public aiHintFailure = false;
-	public aiHintLog = [] as {
-		hint: string,
-		matchingWords: string[],
-		explanation: string
-		teamId: string
-	}[];
 
 	private usingCustomWords = '';
 	private aiHintCount = 0;
@@ -69,7 +63,6 @@ export default class Game {
 			winningCard: this.winningCard,
 			turnCount: this.turnCount,
 			aiHintFailure: this.aiHintFailure,
-			aiHintLog: this.aiHintLog,
 			currentTurn: this.currentTurn,
 			turnHistory: this.turnHistory
 		}
@@ -157,13 +150,14 @@ export default class Game {
 				game.actions.resetGame();
 			},
 
-			startGuessing({ hint, matchingCardIds }) {
+			startGuessing({ hint, matchingCardIds, hintExplanation }) {
 				if (!game.currentTurn) return;
 
 				game.state = GameStates.guessing;
 
 				game.currentTurn.hint = hint;
 				game.currentTurn.matchingCardIds = matchingCardIds;
+				game.currentTurn.hintExplanation = hintExplanation;
 				game.currentTurn.hintGivenTime = Date.now();
 
 				// notify players other than the current captain
@@ -190,7 +184,6 @@ export default class Game {
 				game.turnCount = 0;
 				game.aiHintFailure = false;
 				game.aiHintCount = 0;
-				game.aiHintLog = [];
 				game.currentTurn = null;
 				game.turnHistory = [];
 				game.state = GameStates.waitingToStart;
@@ -327,13 +320,7 @@ export default class Game {
 				this.aiHintFailure = true;
 				return;
 			}
-			this.actions.startGuessing({ hint: hint.hint, matchingCardIds });
-			this.aiHintLog.push({
-				hint: hint.hint,
-				matchingWords: hint.matchingWords,
-				explanation: hint.explanation,
-				teamId: originalTeamId,
-			})
+			this.actions.startGuessing({ hint: hint.hint, matchingCardIds, hintExplanation: hint.explanation });
 		}
 		catch (e) {
 			console.error("Error getting AI hint");

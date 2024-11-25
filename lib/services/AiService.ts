@@ -28,23 +28,27 @@ Now please choose a one-word hint and words. Please include a simple explanation
 Please return ONLY a JSON formatted object with these properties:
 {
   "hint": string,
-  "matchingWords": string[], // only words from board, no explanation here
-  "explanation": string
+  "explanation": string,
+  "matchingWords": string[], // only words from the board, no explanation here
 }
+
+DO NOT put anything other than words from the game board in the "matchingWords" array.
 `;
 
 
-const checkHintPrompt = (hint, opposingWords) => `
+const checkHintPrompt = (hint, matchingWords, opposingWords) => `
 You are playing a game of 'Codenames' where you must help your team guess their own words without guessing any of your opponent's words.
 You help your team by giving a one-word hint that relates conceptually to a few of your team's words, but does NOT relate to any of the opponent's words.
 
 You have already chosen this hint:
 ${hint}
+You said the hint ws related to these words:
+${matchingWords.join("\n")}
 
-
-Now please tell me if the hint could be related to any of the opponent's words.
+Now please tell me if the hint could be MORE related to any of the opponent's words than the words you said OR if your hint is does not strongly match any of the related words.
+If there is a very loose connection to the opponent's words, but a much stronger connection to your team's words, please return true.
 If a team member could mistakenly choose one of these words by the hint, please return false.
-Consider even vague connections.
+If you think that your hint was too vaguely related to your own matching words, please return false.
 
 Here are the opponent's words:
 ${opposingWords.join("\n")}
@@ -132,16 +136,30 @@ export const AiService = {
 		if (!hintSuccess) return { success: false };
 
 		const badHints = [] as string[];
+		let retryCount = 0;
 		do {
+			// do type check
+			if (
+				!hintResponse.hint ||
+				!hintResponse.explanation ||
+				!hintResponse.matchingWords ||
+				!Array.isArray(hintResponse.matchingWords) ||
+				typeof hintResponse.hint !== "string"
+			) {
+				console.log("AI return bad response!", hintResponse);
+				retryCount++;
+				break;
+			}
+
 			for (const matchingWords of hintResponse.matchingWords) {
-				if (!teamWords.includes(matchingWords)) {
-					console.log("AI return a word not in the team words!", matchingWords);
+				if (!hintResponse.matchingWords.find(w => teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()))) {
+					console.log("AI return a word not in the team words!", matchingWords, teamWords);
 					badHints.push(hintResponse.hint);
 					break;
 				}
 			}
 
-			const { success: checkHintSuccess, response: checkHintResponse } = await promptAi(checkHintPrompt(hintResponse.hint, opposingWords));
+			const { success: checkHintSuccess, response: checkHintResponse } = await promptAi(checkHintPrompt(hintResponse.hint, hintResponse.matchingWords, opposingWords));
 			if (!checkHintSuccess) return { success: false };
 			if (checkHintResponse.goodHint) break;
 
@@ -150,7 +168,7 @@ export const AiService = {
 			({ success: hintSuccess, response: hintResponse } = await promptAi(getHintPrompt(teamWords, opposingWords, previousHint, badHints)));
 			if (!hintSuccess) return { success: false };
 			console.log(`New hint: ${hintResponse.hint}`);
-		} while (badHints.length < 5)
+		} while (badHints.length < 5 && retryCount < 10);
 
 		// const { success: matchingWordsSuccess, response: matchingWordsResponse } = await promptAi(getMatchingWordsPrompt(hintResponse.hint, teamWords));
 		// if (!matchingWordsSuccess) return { success: false };

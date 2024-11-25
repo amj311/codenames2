@@ -118,7 +118,7 @@ shark
 Jupiter
 watch
 air
-Lead
+lead
 cap
 bank
 boom
@@ -251,11 +251,11 @@ horse
 cycle
 telescope
 pitch
-King
-Sub
+king
+sub
 pound
 nail
-Giant
+giant
 Germany
 fork
 pan
@@ -298,7 +298,7 @@ eagle
 whip
 octopus
 log
-lochNess
+Loch Ness
 
 robot
 embassy
@@ -363,7 +363,7 @@ skyscraper
 Antarctica
 thumb
 check
-Queen
+queen
 ice
 tag
 tap
@@ -389,7 +389,7 @@ water
 center
 chick
 server
-School
+school
 shoe
 mall
 mole

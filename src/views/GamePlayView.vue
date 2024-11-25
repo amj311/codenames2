@@ -20,7 +20,7 @@ export default {
 			newMatchingCardIds: new Set(),
 			CardSuites,
 			AI_CODEMASTER,
-			showAiHintsLog: false,
+			showTurnHistory: false,
 		}
 	},
 
@@ -111,7 +111,9 @@ export default {
 		},
 
 		initAdvanceTurn() {
-			if (!confirm("Are you sure you want to end this turn turn?")) return;
+			if (this.currentTurn.revealedCardIds.length < this.currentTurn.matchingCardIds.length) {
+				if (!confirm("You have not found all matching words! Are you sure you want to end this turn turn?")) return;
+			}
 			this.gameStore.doGameAction('advanceTurn', {})
 		},
 
@@ -278,12 +280,12 @@ export default {
 							{{ gameState.winner ? gameState.winner.name + " Wins!" : "GAME OVER" }}
 						</div>
 					</div>
-					<div v-if="gameState.aiHintLog.length > 0">
+					<div v-if="gameState.state.isGameOver">
 						<br />
 						<button
 							class="text"
-							@click="showAiHintsLog = !showAiHintsLog"
-						><i class="material-icons-outlined">smart_toy</i> Explain AI hints</button>
+							@click="showTurnHistory = !showTurnHistory"
+						><i class="material-icons-outlined">replay</i> Play-by-play</button>
 					</div>
 				</div>
 			</div>
@@ -310,8 +312,7 @@ export default {
 
 	<div
 		class="modal-overlay"
-		v-if="showAiHintsLog"
-		@click="showAiHintsLog = false"
+		v-if="showTurnHistory"
 	>
 		<div
 			class="ui-block"
@@ -319,26 +320,36 @@ export default {
 			style="max-width: 50rem"
 		>
 			<h3 style="display: flex; align-items: center; justify-content: space-between;">
-				AI Hints Explanation
+				Turns Play-by-play
 				<button
 					class="text"
-					@click="showAiHintsLog = false"
+					@click="showTurnHistory = false"
 				>
 					<i class="material-icons-outlined">close</i>
 				</button>
 			</h3>
 			<div style="max-height: 60vh;  overflow: auto;">
 				<div
-					v-for="aiHint in gameState.aiHintLog"
-					:key="aiHint.id"
+					v-for="turn in gameState.turnHistory"
+					:key="turn.turnCount"
 					style="margin-top: 1em;"
 				>
+					<h3 :style="{ color: gameState.teams[turn.teamId].color }">Team {{ gameState.teams[turn.teamId].name
+						}}</h3>
 					<div>
-						<span style="font-weight: bold;">{{ aiHint.hint }}:</span>
-						{{ aiHint.matchingWords.join(', ') }}
+						<span style="font-weight: bold;">{{ turn.hint }}:</span>
+						{{ turn.matchingCardIds.map(id => gameState.cards.find(c => c.id === id)?.word).join(', ') }}
+					</div>
+					<div v-if="turn.hintExplanation">
+						<i
+							class="material-icons-outlined"
+							style="vertical-align: top;"
+						>smart_toy</i>
+						{{ turn.hintExplanation }}
 					</div>
 					<div>
-						{{ aiHint.explanation }}
+						Words flipped:
+						{{ turn.revealedCardIds.map(id => gameState.cards.find(c => c.id === id)?.word).join(', ') }}
 					</div>
 				</div>
 			</div>

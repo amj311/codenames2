@@ -64,6 +64,10 @@ export default class GameRoom {
 			...userData,
 		} as User;
 		this.users.set(newUserId, newUser);
+
+		this.gameInterface.notifyAll({
+			title: 'A new player has joined the game!',
+		})
 		return newUser;
 	}
 
