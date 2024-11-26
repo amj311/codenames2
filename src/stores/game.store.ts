@@ -20,6 +20,8 @@ export const useGameStore = defineStore('game', {
 		lastSuccessfulAction: Date.now(),
 		pingError: null as any,
 		hasSentSubscription: false,
+
+		showLoading: false,
 	}),
 	actions: {
 		async newGame() {
@@ -67,7 +69,7 @@ export const useGameStore = defineStore('game', {
 				await this.doRoomAction('pingUser', {
 					isActiveTab: !document.hidden,
 					pushSubscription: subscriptionToSend,
-				});
+				}, false);
 				if (subscriptionToSend) {
 					this.hasSentSubscription = true;
 				}
@@ -89,12 +91,12 @@ export const useGameStore = defineStore('game', {
 			return this.roomState.users.find((user) => user.id === userId);
 		},
 
-		async doAction(type: 'game' | 'room', action, data?) {
+		async doAction(type: 'game' | 'room', action, data?, showLoading = true) {
 			try {
-				const { data: resData } = await api.post('/room/' + this.gameRoomId + `/${type}-action/` + action, {
+				const { data: resData } = await this.waitOnProcess(api.post('/room/' + this.gameRoomId + `/${type}-action/` + action, {
 					userId: this.user.id,
 					data,
-				});
+				}), showLoading);
 				if (!resData.success) {
 					throw new Error(`Unsuccessful ${type} action`);
 				}
@@ -110,11 +112,11 @@ export const useGameStore = defineStore('game', {
 			}
 		},
 
-		async doGameAction(action, data?) {
-			await this.doAction('game', action, data);
+		async doGameAction(action, data?, showLoading = true) {
+			await this.doAction('game', action, data, showLoading);
 		},
-		async doRoomAction(action, data?) {
-			await this.doAction('room', action, data);
+		async doRoomAction(action, data?, showLoading = true) {
+			await this.doAction('room', action, data, showLoading);
 		},
 
 		getJoinedGames() {
@@ -151,6 +153,27 @@ export const useGameStore = defineStore('game', {
 			this.pingTimeout = null;
 			this.lastSuccessfulAction = Date.now();
 			this.pingError = null;
+		},
+
+		async waitOnProcess(process, showLoading = true) {
+			let errorTimeout;
+			let loadingTimeout;
+			try {
+				errorTimeout = setTimeout(() => {
+					this.pingError = new Error('Timed out waiting for process');
+				}, 3000)
+				if (showLoading) {
+					loadingTimeout = setTimeout(() => {
+						this.showLoading = true;
+					}, 1000)
+				}
+				return await process;
+			}
+			finally {
+				clearTimeout(errorTimeout);
+				clearTimeout(loadingTimeout);
+				this.showLoading = false;
+			}
 		},
 	},
 	getters: {

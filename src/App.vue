@@ -1,59 +1,50 @@
 <script
-  setup
-  lang="ts"
+	setup
+	lang="ts"
 >
 import { RouterView } from 'vue-router'
+import { useGameStore } from './stores/game.store';
 </script>
 
 <template>
-  <RouterView />
+	<RouterView />
+	<div
+		id="longLoading"
+		v-if="useGameStore().showLoading"
+		class="ui-raised"
+	>
+		<i class="material-icons-outlined spin">autorenew</i>
+		Loading...
+	</div>
 </template>
 
 <style>
-div#notifsList {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 0 .5em;
-  width: 20em;
-  max-width: 100vw;
-  box-sizing: border-box;
-  animation: fade-in 300 linear;
+#longLoading {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+	background-color: #fff;
+	padding: 1em;
+	border-radius: 5px;
+	z-index: 1000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: .5em;
 }
 
-.notif-card {
-  background: #fff;
-  padding: .7em;
-  margin: .25em 0;
-  border-radius: .5em;
-  display: flex;
-  text-align: left;
-  align-items: center;
+.spin {
+	animation: spin 1500ms linear infinite;
 }
 
-.notif-card.err {
-  color: #fff;
-  background: rgb(196, 61, 61);
-}
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
 
-.notifMsg {
-  flex-grow: 1;
-  padding-right: 1em;
-}
-
-.notif-card .button {
-  border-radius: .4em;
-}
-
-div.notifNeg {
-  background: #fff;
-  color: #555;
-}
-
-div.notifClose {
-  user-select: none;
-  cursor: pointer;
+	to {
+		transform: rotate(360deg);
+	}
 }
 </style>
