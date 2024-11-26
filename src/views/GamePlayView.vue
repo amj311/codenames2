@@ -435,6 +435,7 @@ div#playArea {
 	flex-grow: 1;
 	position: relative;
 	padding-top: 10%;
+	aspect-ratio: 1.6;
 	transition: 200ms;
 }
 
@@ -496,17 +497,6 @@ div#duringTurn {
 	text-shadow: 1px 1px 0px #0002;
 }
 
-
-div#bottomBar {
-	display: flex;
-}
-
-div#bottomBar>div {
-	display: flex;
-	flex-grow: 1;
-	width: 100%;
-	justify-content: center;
-}
 
 
 #animationOverlay {
@@ -609,7 +599,6 @@ div#bottomBar>div {
 		width: auto !important;
 		max-width: 9em !important;
 		min-width: 7em !important;
-		height: 4.5em !important;
 		padding-top: 0 !important;
 		display: inline-block;
 	}
