@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
+import { useGameStore } from './game.store';
 
 let swRegistration;
 
@@ -62,6 +63,18 @@ export const useAppStore = defineStore('app', () => {
 		return await swRegistration?.pushManager.getSubscription();
 	}
 
+
+	// use sw to clear notifications
+	window.addEventListener('visibilitychange', async () => {
+		if (!document.hidden && useGameStore().gameRoomId) {
+			for (const notif of (await swRegistration?.getNotifications() || [])) {
+				if (notif.tag === 'game_' + useGameStore().gameRoomId) {
+					console.log('Closing', notif);
+					notif.close();
+				}
+			};
+		}
+	})
 
 	return {
 		teamImgs,

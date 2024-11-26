@@ -36,7 +36,7 @@ self.addEventListener('push', async function (event) {
 	}
 
 	const data = JSON.parse(event.data.text());
-	self.registration.showNotification(data.title, {
+	await self.registration.showNotification(data.title, {
 		icon: '/blue.png',
 		badge: '/mask-white.png',
 		data: { gameRoomId: data.gameRoomId },
@@ -56,7 +56,6 @@ self.addEventListener('notificationclick', async (event) => {
 		(async () => {
 			const openTabs = await clients.matchAll({ type: 'window' });
 			const gameTab = openTabs.find((tab) => {
-				console.log(self);
 				return tab.url === gameUrl;
 			});
 
