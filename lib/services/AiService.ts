@@ -85,7 +85,7 @@ Please return ONLY a JSON formatted object with these properties:
 
 `;
 
-async function promptAi(prompt) {
+async function promptAi(prompt, options: any = {}) {
 	let response;
 	let success = false;
 
@@ -93,16 +93,18 @@ async function promptAi(prompt) {
 		const { data } = await axios.post(
 			"https://api.groq.com/openai/v1/chat/completions",
 			{
-				model: "llama-3.1-70b-versatile",
+				model: options.model || "llama-3.1-70b-versatile",
+				temperature: options.temperature || 1,
+				max_tokens: options.max_tokens || 256,
+				top_p: options.top_p || 0.9,
+
 				messages: [
 					{
 						role: "user",
 						content: prompt,
 					},
 				],
-				temperature: 0.7,
-				max_tokens: 256,
-				top_p: 0.5,
+
 				response_format: {
 					type: "json_object",
 				},
@@ -133,12 +135,16 @@ async function promptAi(prompt) {
 
 export const AiService = {
 	async getHint(teamWords, opposingWords, previousHint = '') {
-		let { success: hintSuccess, response: hintResponse } = await promptAi(getHintPrompt(teamWords, opposingWords, previousHint));
-		if (!hintSuccess) return { success: false };
+		let hintSuccess = false;
+		let hintResponse;
 
 		const badHints = [] as string[];
 		let retryCount = 0;
 		do {
+			// Prompt for hint!!
+			({ success: hintSuccess, response: hintResponse } = await promptAi(getHintPrompt(teamWords, opposingWords, previousHint)));
+			if (!hintSuccess) return { success: false };
+
 			// do type check
 			if (
 				!hintResponse.hint ||
@@ -149,33 +155,47 @@ export const AiService = {
 			) {
 				console.log("AI return bad response!", hintResponse);
 				retryCount++;
-				break;
+				continue;
 			}
 
 			for (const matchingWords of hintResponse.matchingWords) {
 				if (!hintResponse.matchingWords.find(w => teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()))) {
 					console.log("AI return a word not in the team words!", matchingWords, teamWords);
 					badHints.push(hintResponse.hint);
+					retryCount++;
 					continue;
 				}
 			}
 
 
-			const { success: matchingWordsSuccess, response: matchingWordsResponse } = await promptAi(guessWordsPrompt(hintResponse.hint, hintResponse.matchingWords.length, teamWords));
+			const { success: matchingWordsSuccess, response: matchingWordsResponse } = await promptAi(
+				guessWordsPrompt(hintResponse.hint, hintResponse.matchingWords.length, teamWords),
+				{ top_p: .2, temperature: .1 },
+			);
 			if (matchingWordsSuccess) {
 				const allMatching = !matchingWordsResponse.guessedWords.find(w => !teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()));
 				console.log('AI guessed the same words:', allMatching, matchingWordsResponse.guessedWords);
 			}
 
-			const { success: checkHintSuccess, response: checkHintResponse } = await promptAi(checkHintPrompt(hintResponse.hint, hintResponse.matchingWords, opposingWords));
+			const { success: checkHintSuccess, response: checkHintResponse } = await promptAi(
+				checkHintPrompt(hintResponse.hint, hintResponse.matchingWords, opposingWords),
+				{ top_p: .2, temperature: .1 },
+			);
 			if (!checkHintSuccess) return { success: false };
-			if (checkHintResponse.goodHint) break;
+			if (checkHintResponse.goodHint) {
+				console.log(`Good hint: ${hintResponse.hint}, explanation: ${checkHintResponse.explanation}.`);
+				return {
+					success: true,
+					response: {
+						hint: hintResponse.hint,
+						matchingWords: hintResponse.matchingWords,
+						explanation: hintResponse.explanation,
+					}
+				};
+			};
 
 			console.log(`Bad hint: ${hintResponse.hint}, explanation: ${checkHintResponse.explanation}. Will re-prompt.`);
 			badHints.push(hintResponse.hint);
-			({ success: hintSuccess, response: hintResponse } = await promptAi(getHintPrompt(teamWords, opposingWords, previousHint, badHints)));
-			if (!hintSuccess) return { success: false };
-			console.log(`New hint: ${hintResponse.hint}`);
 		} while (badHints.length < 5 && retryCount < 10);
 
 		return {
