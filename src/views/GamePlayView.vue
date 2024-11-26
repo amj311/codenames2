@@ -300,7 +300,11 @@ export default {
 					:key="card.word"
 					:id="'card_' + card.id"
 					class="card-cell"
-					:class="{ selected: showTurnPrep && newMatchingCardIds.has(card.id), selectable: canSelectCard(card) }"
+					:class="{
+						selected: showTurnPrep && newMatchingCardIds.has(card.id),
+						selectable: canSelectCard(card),
+						meantForTurn: currentTurn.matchingCardIds.includes(card.id) && userCaptainOfTeam,
+					}"
 					@click="toggleSelectCard(card)"
 					:style="{ width: cardWidth + '%', 'padding-top': cardWidth * .60 + '%' }"
 				>
@@ -429,6 +433,17 @@ div#playArea {
 	position: relative;
 	padding-top: 10%;
 	transition: 200ms;
+
+	&.meantForTurn::after {
+		font-family: 'Material Icons';
+		content: "check";
+		font-feature-settings: 'liga';
+		position: absolute;
+		bottom: 0.5rem;
+		left: 0.5rem;
+		font-size: 1.5em;
+		color: #999;
+	}
 }
 
 .selecting .card-cell {
@@ -443,7 +458,6 @@ div#playArea {
 		font-family: 'Material Icons';
 		content: "check";
 		font-feature-settings: 'liga';
-
 		position: absolute;
 		bottom: 0.25rem;
 		right: 0.5rem;
