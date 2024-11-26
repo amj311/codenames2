@@ -133,7 +133,7 @@ export default {
 				class="card-face front ui-raised"
 				:class="{
 					'ui-pressable': !card.revealed && !freeRotate && canFlip,
-					meantForTurn: gameStore.gameState.currentTurn.matchingCardIds.includes(card.id) && this.gameStore.userCaptainOfTeam,
+					meantForTurn: gameStore.gameState.currentTurn.matchingCardIds.includes(card.id) && this.gameStore.userCaptainOfTeam && !this.gameStore.gameState.state.isGameOver,
 				}"
 				@click="doFlipCard"
 			>
@@ -311,8 +311,8 @@ export default {
 		position: absolute;
 		bottom: 0.5rem;
 		left: 0.5rem;
-		font-size: 1.5em;
-		color: #999;
+		font-size: 1em;
+		opacity: .6;
 	}
 }
 
