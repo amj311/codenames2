@@ -320,7 +320,7 @@ export default {
 		<div
 			class="ui-block"
 			id="aiHintsLog"
-			style="max-width: 50rem"
+			style="max-width: min(calc(100vw - 4rem), 50rem)"
 		>
 			<h3 style="display: flex; align-items: center; justify-content: space-between;">
 				Turns Play-by-play
@@ -331,7 +331,7 @@ export default {
 					<i class="material-icons-outlined">close</i>
 				</button>
 			</h3>
-			<div style="max-height: 60vh;  overflow: auto;">
+			<div style="max-height: 60vh;  overflow: auto; padding-right: 1em;">
 				<div
 					v-for="turn in gameState.turnHistory"
 					:key="turn.turnCount"
@@ -340,7 +340,10 @@ export default {
 					<h3 :style="{ color: gameState.teams[turn.teamId].color }">Team {{ gameState.teams[turn.teamId].name
 						}}</h3>
 					<div>
-						<span style="font-weight: bold;">{{ turn.hint }}:</span>
+						Hint: <span class="text-code">{{ turn.hint }}:</span>
+					</div>
+					<div>
+						Intended:
 						{{ turn.matchingCardIds.map(id => gameState.cards.find(c => c.id === id)?.word).join(', ') }}
 					</div>
 					<div v-if="turn.hintExplanation">
@@ -351,8 +354,9 @@ export default {
 						{{ turn.hintExplanation }}
 					</div>
 					<div>
-						Words flipped:
-						{{ turn.revealedCardIds.map(id => gameState.cards.find(c => c.id === id)?.word).join(', ') }}
+						Flipped:
+						<span class="text-code">{{ turn.revealedCardIds.map(id => gameState.cards.find(c => c.id ===
+							id)?.word).join(', ') }}</span>
 					</div>
 				</div>
 			</div>
