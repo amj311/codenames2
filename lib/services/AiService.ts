@@ -61,28 +61,29 @@ Please return ONLY a JSON formatted object with these properties:
 }
 `;
 
-// const getMatchingWordsPrompt = (hint, teamWords) => `
-// You are playing a game of 'Codenames' where you must help your team guess their own words without guessing any of your opponent's words.
-// You help your team by giving a one-word hint that relates conceptually to a few of your team's words, but does NOT relate to any of the opponent's words.
+const guessWordsPrompt = (hint, hintNum, allWords) => `
+You are playing a game of 'Codenames' where you must help your team guess their own words without guessing any of your opponent's words.
+An AI bot has given a one-word hint that relates conceptually to a few of your team's words, but does NOT relate to any of the opponent's words.
+You do not know which words are which.
 
-// You have already chosen this hint:
-// ${hint}
+This is the hint:
+${hint}
 
+The bot says the hint matches this many words:
+${hintNum}
 
-// Now, please select one or more words that are VERY STRONGLY related to the hint.
-// Try not to count opposites as matches, as that doesn't usually go well.
+These are the words:
+${allWords.join("\n")}
 
-// Here is the list of our team's words:
-// ${teamWords.join("\n")}
+Now, please make a guess at which words the AI bot was hinting at.
 
+Please return ONLY a JSON formatted object with these properties:
+{
+  "guessedWords": string[], // ONLY words from game here, nothing else
+  "explanation": string
+}
 
-// Please return ONLY a JSON formatted object with these properties:
-// {
-//   "matchingWords": string[],
-//   "explanation": string
-// }
-
-// `;
+`;
 
 async function promptAi(prompt) {
 	let response;
@@ -155,8 +156,15 @@ export const AiService = {
 				if (!hintResponse.matchingWords.find(w => teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()))) {
 					console.log("AI return a word not in the team words!", matchingWords, teamWords);
 					badHints.push(hintResponse.hint);
-					break;
+					continue;
 				}
+			}
+
+
+			const { success: matchingWordsSuccess, response: matchingWordsResponse } = await promptAi(guessWordsPrompt(hintResponse.hint, hintResponse.matchingWords.length, teamWords));
+			if (matchingWordsSuccess) {
+				const allMatching = !matchingWordsResponse.guessedWords.find(w => !teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()));
+				console.log('AI guessed the same words:', allMatching, matchingWordsResponse.guessedWords);
 			}
 
 			const { success: checkHintSuccess, response: checkHintResponse } = await promptAi(checkHintPrompt(hintResponse.hint, hintResponse.matchingWords, opposingWords));
@@ -170,8 +178,6 @@ export const AiService = {
 			console.log(`New hint: ${hintResponse.hint}`);
 		} while (badHints.length < 5 && retryCount < 10);
 
-		// const { success: matchingWordsSuccess, response: matchingWordsResponse } = await promptAi(getMatchingWordsPrompt(hintResponse.hint, teamWords));
-		// if (!matchingWordsSuccess) return { success: false };
 		return {
 			success: true,
 			response: {
