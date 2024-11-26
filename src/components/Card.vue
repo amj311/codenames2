@@ -131,7 +131,10 @@ export default {
 		<div class="card">
 			<div
 				class="card-face front ui-raised"
-				:class="{ 'ui-pressable': !card.revealed && !freeRotate && canFlip }"
+				:class="{
+					'ui-pressable': !card.revealed && !freeRotate && canFlip,
+					meantForTurn: gameStore.gameState.currentTurn.matchingCardIds.includes(card.id) && this.gameStore.userCaptainOfTeam,
+				}"
 				@click="doFlipCard"
 			>
 				<div
@@ -298,6 +301,19 @@ export default {
 	right: 0.5rem;
 	font-size: 1em;
 	opacity: .6;
+}
+
+.front {
+	&.meantForTurn::after {
+		font-family: 'Material Icons';
+		content: "check";
+		font-feature-settings: 'liga';
+		position: absolute;
+		bottom: 0.5rem;
+		left: 0.5rem;
+		font-size: 1.5em;
+		color: #999;
+	}
 }
 
 .back {
