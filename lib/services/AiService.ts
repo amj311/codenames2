@@ -1,4 +1,3 @@
-
 import axios from "axios";
 
 
@@ -20,6 +19,8 @@ Here are the opposing words:
 ${opposingWords.join("\n")}
 
 Keep these guidelines in mind:
+- Use only CLEAR and OBVIOUS connections
+- Hints should be clear to understand at a middle school education level
 - You get more points for linking multiple words together so try hint at at LEAST 2 or more words when possible.
 - You lose points for guessing opposing words so AVOID hints that could be connected to an opposing word.
 
@@ -42,13 +43,9 @@ You help your team by giving a one-word hint that relates conceptually to a few 
 
 You have already chosen this hint:
 ${hint}
-You said the hint ws related to these words:
-${matchingWords.join("\n")}
 
-Now please tell me if the hint could be MORE related to any of the opponent's words than the words you said OR if your hint is does not strongly match any of the related words.
-If there is a very loose connection to the opponent's words, but a much stronger connection to your team's words, please return true.
+Now please tell me if the hint could be AT ALL related to any of the opponent's words than the words you said.
 If a team member could mistakenly choose one of these words by the hint, please return false.
-If you think that your hint was too vaguely related to your own matching words, please return false.
 
 Here are the opponent's words:
 ${opposingWords.join("\n")}
@@ -96,7 +93,7 @@ async function promptAi(prompt, options: any = {}) {
 				model: options.model || "llama-3.1-70b-versatile",
 				temperature: options.temperature || 0.5,
 				max_tokens: options.max_tokens || 256,
-				top_p: options.top_p || 1,
+				top_p: options.top_p || 0.5,
 
 				messages: [
 					{
@@ -143,8 +140,8 @@ export const AiService = {
 		do {
 			// Prompt for hint!!
 			({ success: hintSuccess, response: hintResponse } = await promptAi(
-				getHintPrompt(teamWords, opposingWords, previousHint),
-				{ temperature: 0.5 }
+				getHintPrompt(teamWords, opposingWords, previousHint, badHints),
+				{ temperature: 0.2 }
 			));
 			if (!hintSuccess) return { success: false };
 
@@ -177,18 +174,18 @@ export const AiService = {
 			}
 
 
-			const { success: matchingWordsSuccess, response: matchingWordsResponse } = await promptAi(
-				guessWordsPrompt(hintResponse.hint, hintResponse.matchingWords.length, teamWords),
-				{ temperature: 0.1, top_p: 0.5 },
-			);
-			if (matchingWordsSuccess) {
-				const allMatching = !matchingWordsResponse.guessedWords.find(w => !teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()));
-				console.log('AI guessed the same words:', allMatching, matchingWordsResponse.guessedWords);
-			}
+			// const { success: matchingWordsSuccess, response: matchingWordsResponse } = await promptAi(
+			// 	guessWordsPrompt(hintResponse.hint, hintResponse.matchingWords.length, teamWords),
+			// 	{ temperature: 0.5, top_p: 0.5 },
+			// );
+			// if (matchingWordsSuccess) {
+			// 	const allMatching = !matchingWordsResponse.guessedWords.find(w => !teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()));
+			// 	console.log('AI guessed the same words:', allMatching, matchingWordsResponse.guessedWords);
+			// }
 
 			const { success: checkHintSuccess, response: checkHintResponse } = await promptAi(
 				checkHintPrompt(hintResponse.hint, hintResponse.matchingWords, opposingWords),
-				{ temperature: 0.4 },
+				{ temperature: 0.7 },
 			);
 			if (!checkHintSuccess) return { success: false };
 			if (checkHintResponse.goodHint) {
@@ -205,6 +202,8 @@ export const AiService = {
 
 			console.log(`Bad hint: ${hintResponse.hint}, explanation: ${checkHintResponse.explanation}. Will re-prompt.`);
 			badHints.push(hintResponse.hint);
+			retryCount++;
+			console.log('Bad hints:', badHints.length, retryCount);
 		} while (badHints.length < 5 && retryCount < 10);
 
 		return {
