@@ -13,6 +13,7 @@ export const useGameStore = defineStore('game', {
 			username: '',
 			isHost: false,
 			isPlayer: false,
+			teamId: null as string | null,
 		},
 		gameState: null as any,
 		roomState: null as any,

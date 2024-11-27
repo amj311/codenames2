@@ -69,9 +69,11 @@ export default {
 
 		canFlip() {
 			return (
-				this.gameStore.isHost ||
-				this.gameState.config.numTeams === 1 ||
-				(this.userCaptainOfTeam && this.gameState.state.canRevealCard && this.teamOfTurn?.id === this.userCaptainOfTeam.id)
+				this.gameState.state.canRevealCard &&
+				(
+					this.gameStore.isHost ||
+					this.gameStore.user.teamId === this.teamOfTurn.id
+				)
 			)
 		},
 		showTurnPrep() {

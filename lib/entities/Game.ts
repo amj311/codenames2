@@ -89,8 +89,15 @@ export default class Game {
 			}
 		}
 		if (this.config.mode === 'high score') {
+			if (!this.teams.teamOne.captainId) {
+				this.teams.teamOne.captainId = this.teams.teamTwo?.captainId;
+			}
 			delete this.teams.teamTwo;
 			this.config.numTeams = 1;
+			// set all players to team one
+			this.room.users.forEach(user => {
+				user.teamId = 'teamOne';
+			})
 		}
 		else if (!this.teams.teamTwo) {
 			this.teams.teamTwo = new Team('teamTwo', 'Red', '#f22');

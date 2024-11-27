@@ -96,14 +96,6 @@ async function playAgain() {
 					<div>{{ gameStore.roomState.name }}</div>
 					<div style="flex-grow: 1"></div>
 					<div
-						id="roomCode"
-						v-if="!gameStore.gameState.state.isInPlay"
-					>
-						<i class="material-icons">tap_and_play</i>
-						&nbsp;
-						<span class="code-cap text-code">{{ gameStore.gameRoomId }}</span>
-					</div>
-					<div
 						v-if="gameStore.gameState.config.mode === 'classic' && gameStore.gameState.state.isInPlay && !gameStore.gameState.state.isGameOver"
 						style="display: flex; align-items: center; font-weight: bold;"
 						:style="{ color: gameStore.teamOfTurn.color }"
@@ -213,20 +205,6 @@ async function playAgain() {
 	gap: 1em;
 	margin-bottom: 1rem;
 }
-
-#roomCode {
-	display: flex;
-	align-items: center;
-	font-weight: bold;
-	flex-wrap: wrap;
-	justify-content: space-around;
-	letter-spacing: .1rem;
-}
-
-.code-cap {
-	text-transform: uppercase;
-}
-
 
 
 .disconnect-toast {

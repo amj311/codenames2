@@ -185,8 +185,8 @@ export default {
 }
 
 #logo {
-	width: 75vw;
-	max-width: 500px;
+	width: 65vw;
+	max-width: 400px;
 }
 
 #slideContainer {

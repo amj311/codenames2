@@ -290,6 +290,13 @@ const thingsToBeInOrOf: string[] = [
 	'Paris',
 	'Prague',
 	'Rome',
+	'Tokyo',
+	'Vienna',
+	'Washington',
+	'Machine',
+	'Shadows',
+	"Love",
+	"Paradise",
 	'the Attic',
 	'the CIA',
 	'the Dark',
@@ -306,12 +313,6 @@ const thingsToBeInOrOf: string[] = [
 	'the Sun',
 	'the System',
 	'the Underworld',
-	'Tokyo',
-	'Vienna',
-	'Washington',
-	'Machine',
-	'Shadows',
-	"Love"
 ];
 
 

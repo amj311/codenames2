@@ -46,7 +46,7 @@ body::before {
 }
 
 .ui-block > h3:first-of-type {
-	margin: 0 0 0.5em;
+	margin: 0 0 1em;
 }
 
 .form-row {

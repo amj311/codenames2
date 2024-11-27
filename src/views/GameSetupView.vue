@@ -36,6 +36,7 @@ export default {
 
 			tmpUsername: '',
 			showUsernameModal: false,
+			showChooseTeamModal: false,
 		})
 	},
 
@@ -155,6 +156,10 @@ export default {
 		customDecksTrigger() {
 			return JSON.stringify(this.customDecks);
 		},
+
+		chooseTeamTrigger() {
+			return JSON.stringify(this.user);
+		},
 	},
 
 	watch: {
@@ -174,7 +179,16 @@ export default {
 		customDecksTrigger() {
 			localStorage.setItem('customWordDecks', JSON.stringify(this.customDecks));
 			this.pushTmpConfig();
-		}
+		},
+
+		chooseTeamTrigger() {
+			if (this.user.username && !this.user.teamId && this.gameState.teams.teamTwo) {
+				this.showChooseTeamModal = true;
+			}
+			else {
+				this.showChooseTeamModal = false;
+			}
+		},
 	},
 
 
@@ -192,6 +206,7 @@ export default {
 		},
 
 		async claimCaptain(teamCode) {
+			if (this.user.teamId !== teamCode) return;
 			try {
 				await this.gameStore.doGameAction('makeUserCaptain', {
 					userId: this.user.id,
@@ -281,7 +296,7 @@ export default {
 		},
 
 		isActive(user) {
-			return user.connection.lastPing > Date.now() - 1000;
+			return user.connection.lastPing > Date.now() - 3000;
 		},
 
 		copyToClipboard(str) {
@@ -314,6 +329,23 @@ export default {
 			catch (err) {
 				console.error(err);
 			}
+		},
+
+		async setUserTeam(teamId) {
+			try {
+				const data = {
+					teamId,
+				};
+				await this.gameStore.doRoomAction('updateUserData', data);
+				this.showChooseTeamModal = false;
+			}
+			catch (err) {
+				console.error(err);
+			}
+		},
+
+		teamMembers(teamId) {
+			return this.gameStore.roomState.users.filter((user) => user.teamId === teamId);
 		}
 	},
 
@@ -324,55 +356,98 @@ export default {
 	<div id="setup">
 		<div id="teams">
 			<div class="ui-block">
-				<h3>Codemasters</h3>
-
+				<h3>Teams</h3>
 				<div
 					class="form-row"
 					id="teamSelect"
 				>
 					<div
-						class="team-caption-option"
-						:class="{
-							'no-captain': !gameState.teams[teamCode].captainId,
-							'is-captain': gameStore.userCaptainOfTeam
-						}"
+						class="team-summary"
 						v-for="teamCode in teamCaptainOptions"
 						:key="teamCode"
 					>
 						<div
-							style="display: flex; flex-direction: column; align-items: center;"
-							:class="{ 'disabled': userCaptainOfTeam || gameState.teams[teamCode].captainId }"
-							@click="() => claimCaptain(teamCode)"
+							class="team-caption-option"
+							:class="{
+								'can-claim': !userCaptainOfTeam && !gameState.teams[teamCode].captainId && teamCode === user.teamId,
+							}"
 						>
 							<div
-								class="ninja ui-shiny ui-raised"
-								:class="`bg-ninja-${appStore.teamImgs[teamCode] + (gameState.teams[teamCode].captainId === AI_CODEMASTER ? '-ai' : '')}`"
-								width="50"
-							/>
-							<div v-if="gameState.teams[teamCode].captainId">
-								<span>{{ gameState.teams[teamCode].captainId === AI_CODEMASTER ? 'AI Codemaster' :
-									gameStore.getUserById(gameState.teams[teamCode].captainId).username }}</span>
-								<span
-									v-if="gameState.teams[teamCode].captainId === user.id
-										|| gameState.teams[teamCode].captainId === AI_CODEMASTER
-										|| gameStore.isHost"
-									class="remove-captain"
-									@click.stop="() => removeTeamCaptain(teamCode)"
-								>
-									<i class="material-icons">cancel</i>
-								</span>
+								style="display: flex; flex-direction: column; align-items: center;"
+								:class="{ 'disabled': userCaptainOfTeam || gameState.teams[teamCode].captainId }"
+								@click="() => claimCaptain(teamCode)"
+							>
+								<div
+									class="ninja ui-shiny ui-raised"
+									:class="`bg-ninja-${appStore.teamImgs[teamCode] + (gameState.teams[teamCode].captainId === AI_CODEMASTER ? '-ai' : '')}`"
+									width="50"
+								/>
+								<div v-if="gameState.teams[teamCode].captainId">
+									<span>{{ gameState.teams[teamCode].captainId === AI_CODEMASTER ? 'AI Codemaster' :
+										gameStore.getUserById(gameState.teams[teamCode].captainId).username }}</span>
+									<span
+										v-if="gameState.teams[teamCode].captainId === user.id
+											|| gameState.teams[teamCode].captainId === AI_CODEMASTER
+											|| gameStore.isHost"
+										class="remove-captain"
+										@click.stop="() => removeTeamCaptain(teamCode)"
+									>
+										<i class="material-icons">cancel</i>
+									</span>
+								</div>
+								<div v-else>
+									<div v-if="!userCaptainOfTeam && user.teamId === teamCode">
+										Click to be codemaster
+									</div>
+									<div v-else>No codemaster yet</div>
+								</div>
 							</div>
-							<div v-else>
-								<div v-if="!userCaptainOfTeam">Click to be codemaster</div>
-								<div v-else>No codemaster yet</div>
+							<button
+								v-if="!gameState.teams[teamCode].captainId"
+								@click.stop="() => makeAiCaptain(teamCode)"
+								class="text"
+							><i class="material-icons-outlined">smart_toy</i>Use AI</button>
+						</div>
+
+						<div style="margin: 1rem 0; display: flex; flex-wrap: wrap; gap: .5em">
+							<div
+								class="player-card"
+								:class="{ inactive: !isActive(user), me: user.id === gameStore.user.id }"
+								v-for="user in teamMembers(teamCode)"
+								:key="user.id"
+								@click="() => handleUserClick(user)"
+							>
+								{{ user.username || 'Joining...' }}
+								<i
+									v-if="user.id === gameStore.user.id"
+									class="material-icons"
+								>edit</i>
+								<div
+									v-else
+									class="active-indicator"
+								/>
 							</div>
 						</div>
 						<button
-							v-if="!gameState.teams[teamCode].captainId"
-							@click.stop="() => makeAiCaptain(teamCode)"
+							v-if="!user.teamId"
+							@click="() => setUserTeam(teamCode)"
+							class="ui-raised ui-pressable ui-shiny"
+							:style="{ 'background-color': gameState.teams[teamCode].color }"
+						>
+							Join {{ gameState.teams[teamCode].name }} Team
+						</button>
+
+						<button
+							v-else-if="!userCaptainOfTeam && user.teamId !== teamCode"
+							@click="() => setUserTeam(teamCode)"
 							class="text"
-						><i class="material-icons-outlined">smart_toy</i>Use AI</button>
+						>
+							Switch to {{ gameState.teams[teamCode].name }} team
+						</button>
+
 					</div>
+
+
 				</div>
 
 			</div>
@@ -383,26 +458,17 @@ export default {
 				id="joinInstructions"
 				class="ui-block"
 			>
-				<h3>Players</h3>
-				<div style="margin: 1rem 0; display: flex; flex-wrap: wrap; gap: .5em">
-					<div
-						class="player-card"
-						:class="{ inactive: !isActive(user), me: user.id === gameStore.user.id }"
-						v-for="user in gameStore.roomState.users"
-						:key="user.id"
-						@click="() => handleUserClick(user)"
-					>
-						{{ user.username || 'Joining...' }}
-						<i
-							v-if="user.id === gameStore.user.id"
-							class="material-icons"
-						>edit</i>
-						<div
-							v-else
-							class="active-indicator"
-						/>
+				<h3 style="display: flex; align-items: center;">
+
+					<div>Scan to Join</div>
+					<div style="flex-grow: 1"></div>
+					<div id="roomCode">
+						<i class="material-icons">tap_and_play</i>
+						&nbsp;
+						<span class="code-cap text-code">{{ gameStore.gameRoomId }}</span>
 					</div>
-				</div>
+				</h3>
+
 				<div style="text-align:center">
 					<div v-if="joinUrlQr">
 						<img
@@ -647,6 +713,48 @@ export default {
 			</form>
 		</div>
 	</div>
+
+
+	<div
+		class="modal-overlay"
+		v-if="showChooseTeamModal"
+	>
+		<div class="ui-block choose-team-modal">
+			<h3>Select a team</h3>
+			<div
+				class="form-row"
+				id="teamSelect"
+			>
+				<div
+					class="team-option"
+					v-for="teamCode in teamCaptainOptions"
+					:key="teamCode"
+				>
+					<div
+						style="display: flex; flex-direction: column; align-items: center;"
+						@click="() => setUserTeam(teamCode)"
+					>
+						<div
+							class="ninja ui-shiny ui-raised"
+							:class="`bg-ninja-${appStore.teamImgs[teamCode]}`"
+							width="50"
+						/>
+						<div>{{ gameState.teams[teamCode].name }}</div>
+					</div>
+				</div>
+
+			</div>
+
+			<div style="text-align: center;">
+				<!-- <button
+					@click.stop="() => setUserTeam('bystander')"
+					class="text"
+				>
+					Skip for now
+				</button> -->
+			</div>
+		</div>
+	</div>
 </template>
 
 
@@ -678,9 +786,21 @@ export default {
 }
 
 img#joinQR {
-	width: 15em;
-	max-width: 100%;
+	width: 19em;
+	max-width: calc(100% - 2rem);
 }
+
+#roomCode {
+	display: flex;
+	align-items: center;
+	font-weight: bold;
+	font-size: 1.1em;
+
+	span.code-cap {
+		letter-spacing: 0.05em;
+	}
+}
+
 
 #teams {
 	width: 100%;
@@ -695,9 +815,13 @@ img#joinQR {
 	margin-right: 0.5em;
 }
 
-div#teamLists {
+.team-summary {
+	flex-grow: 1;
+	min-width: 250px;
+	max-width: 400px;
 	display: flex;
-	flex-wrap: wrap;
+	flex-direction: column;
+	align-items: center;
 }
 
 .player-card {
@@ -778,7 +902,7 @@ div#teamLists {
 	text-align: center;
 }
 
-.team-caption-option.no-captain:not(.is-captain) {
+.team-caption-option.can-claim {
 	cursor: pointer;
 }
 
@@ -799,7 +923,7 @@ div#teamLists {
 	transition: 200ms;
 }
 
-.team-caption-option.no-captain:not(.is-captain):hover .ninja {
+.team-caption-option.can-claim:hover .ninja {
 	transform: scale(1.1);
 }
 
@@ -863,5 +987,47 @@ div#customDeckModal {
 
 .username-modal input {
 	font-size: 1.2em;
+}
+
+
+.choose-team-modal {
+
+	#teamSelect.form-row {
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+
+	.team-option {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		font-size: .8em;
+		user-select: none;
+		width: 11em;
+		text-align: center;
+		cursor: pointer;
+	}
+
+	.team-option .ninja {
+		display: block;
+		border-radius: 50%;
+		overflow: hidden;
+		width: 4rem;
+		height: 4rem;
+		background-size: 110%;
+		background-position: center;
+		background-color: #bbb;
+		margin: .5rem;
+		transition: 200ms;
+	}
+
+	.team-option .ninja {
+		transform: scale(1.1);
+	}
+
 }
 </style>

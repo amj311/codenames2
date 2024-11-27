@@ -12,6 +12,7 @@ type User = {
 	connection: UserConnection;
 	isPlayer: boolean;
 	username: string;
+	teamId: string | null;
 	isActiveTab?: boolean;
 }
 
@@ -32,10 +33,7 @@ export default class GameRoom {
 	}
 
 	private createHostUser() {
-		const host = this.registerNewUser({
-			username: '',
-			isPlayer: true,
-		});
+		const host = this.joinNewPlayer();
 		this.hostUserId = host.id;
 		return host;
 	}
@@ -50,19 +48,14 @@ export default class GameRoom {
 	}
 
 	private joinNewPlayer() {
-		return this.registerNewUser({
-			username: '',
-			isPlayer: true,
-		});
-	}
-
-	private registerNewUser(userData: Partial<User>) {
 		const newUserId = userIds.getNew();
-		const newUser = {
+		const newUser: User = {
 			id: newUserId,
 			connection: new UserConnection(newUserId),
-			...userData,
-		} as User;
+			username: '',
+			isPlayer: true,
+			teamId: this.game.teams.teamTwo ? null : this.game.teams.teamOne.id,
+		};
 		this.users.set(newUserId, newUser);
 
 		this.gameInterface.notifyAll({

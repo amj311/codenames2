@@ -94,9 +94,9 @@ async function promptAi(prompt, options: any = {}) {
 			"https://api.groq.com/openai/v1/chat/completions",
 			{
 				model: options.model || "llama-3.1-70b-versatile",
-				temperature: options.temperature || 1,
+				temperature: options.temperature || 0.5,
 				max_tokens: options.max_tokens || 256,
-				top_p: options.top_p || 0.9,
+				top_p: options.top_p || 1,
 
 				messages: [
 					{
@@ -142,7 +142,10 @@ export const AiService = {
 		let retryCount = 0;
 		do {
 			// Prompt for hint!!
-			({ success: hintSuccess, response: hintResponse } = await promptAi(getHintPrompt(teamWords, opposingWords, previousHint)));
+			({ success: hintSuccess, response: hintResponse } = await promptAi(
+				getHintPrompt(teamWords, opposingWords, previousHint),
+				{ temperature: 0.5 }
+			));
 			if (!hintSuccess) return { success: false };
 
 			// do type check
@@ -160,7 +163,13 @@ export const AiService = {
 
 			for (const matchingWords of hintResponse.matchingWords) {
 				if (!hintResponse.matchingWords.find(w => teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()))) {
-					console.log("AI return a word not in the team words!", matchingWords, teamWords);
+					console.log("AI returned a word not in the team words!", matchingWords, teamWords);
+					badHints.push(hintResponse.hint);
+					retryCount++;
+					continue;
+				}
+				if (hintResponse.matchingWords.find(w => opposingWords.find(w2 => w2.toLowerCase() === w.toLowerCase()))) {
+					console.log("AI returned a word in the opposing words!", matchingWords, opposingWords);
 					badHints.push(hintResponse.hint);
 					retryCount++;
 					continue;
@@ -170,7 +179,7 @@ export const AiService = {
 
 			const { success: matchingWordsSuccess, response: matchingWordsResponse } = await promptAi(
 				guessWordsPrompt(hintResponse.hint, hintResponse.matchingWords.length, teamWords),
-				{ top_p: .2, temperature: .1 },
+				{ temperature: 0.1, top_p: 0.5 },
 			);
 			if (matchingWordsSuccess) {
 				const allMatching = !matchingWordsResponse.guessedWords.find(w => !teamWords.find(w2 => w2.toLowerCase() === w.toLowerCase()));
@@ -179,11 +188,11 @@ export const AiService = {
 
 			const { success: checkHintSuccess, response: checkHintResponse } = await promptAi(
 				checkHintPrompt(hintResponse.hint, hintResponse.matchingWords, opposingWords),
-				{ top_p: .2, temperature: .1 },
+				{ temperature: 0.4 },
 			);
 			if (!checkHintSuccess) return { success: false };
 			if (checkHintResponse.goodHint) {
-				console.log(`Good hint: ${hintResponse.hint}, explanation: ${checkHintResponse.explanation}.`);
+				console.log(`Good hint: ${hintResponse.hint}`);
 				return {
 					success: true,
 					response: {

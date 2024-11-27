@@ -34,8 +34,8 @@ export default {
 				!this.card.revealed &&
 				this.gameStore.gameState.state.canRevealCard &&
 				(
-					this.gameStore.userCaptainOfTeam && this.gameStore.teamOfTurn?.id === this.gameStore.userCaptainOfTeam?.id
-					|| this.gameStore.gameState.config.numTeams === 1
+					this.gameStore.isHost ||
+					this.gameStore.user.teamId === this.gameStore.gameState.teamOfTurn.id
 				)
 			)
 		},
@@ -62,7 +62,7 @@ export default {
 		},
 
 		doFlipCard() {
-			if (!this.showFlip) return;
+			if (!this.canFlip || !this.showFlip) return;
 			this.waitForFreeRotate = true;
 			this.gameStore.doGameAction('revealCard', { cardId: this.card.id })
 		},
