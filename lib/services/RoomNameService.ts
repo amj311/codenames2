@@ -110,10 +110,7 @@ const common_nouns: string[] = [
 	"Gambit",
 	"Game",
 	"Ghost",
-	"Heart",
-	"Hub",
 	"Hybrid",
-	"Ideal",
 	"Identity",
 	"Illusion",
 	"Infiltration",
@@ -295,7 +292,6 @@ const thingsToBeInOrOf: string[] = [
 	'Washington',
 	'Machine',
 	'Shadows',
-	"Love",
 	"Paradise",
 	'the Attic',
 	'the CIA',
@@ -303,7 +299,6 @@ const thingsToBeInOrOf: string[] = [
 	'the Desert',
 	'the FBI',
 	'the Fog',
-	'the House',
 	'the Kremlin',
 	'the Light',
 	'the Mirror',
@@ -312,7 +307,6 @@ const thingsToBeInOrOf: string[] = [
 	'the Shadows',
 	'the Sun',
 	'the System',
-	'the Underworld',
 ];
 
 
