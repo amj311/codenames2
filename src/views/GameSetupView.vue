@@ -182,7 +182,7 @@ export default {
 		},
 
 		chooseTeamTrigger() {
-			if (this.user.username && !this.user.teamId && this.gameState.teams.teamTwo) {
+			if (!this.gameStore.isHost && this.user.username && !this.user.teamId && this.gameState.teams.teamTwo) {
 				this.showChooseTeamModal = true;
 			}
 			else {
