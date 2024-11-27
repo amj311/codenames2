@@ -134,7 +134,7 @@ async function playAgain() {
 					<div
 						v-else-if="gameStore.gameState.state.isGameOver"
 						@click="playAgain"
-						class="button inline"
+						class="button inline ui-raised ui-shiny ui-pressable"
 						style="cursor: pointer; display: flex; align-items: center; justify-content: center;"
 					>
 						PLAY AGAIN

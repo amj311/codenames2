@@ -229,6 +229,7 @@ export default {
 							@click="startGuessing"
 							class="ui-raised ui-pressable ui-shiny"
 							:style="{ 'background-color': teamOfTurn.color, marginTop: '1em' }"
+							:disabled="!newHint || newMatchingCardIds.size === 0"
 						>
 							GIVE HINT
 						</button>
