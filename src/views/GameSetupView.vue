@@ -299,9 +299,9 @@ export default {
 			return user.connection.lastPing > Date.now() - 3000;
 		},
 
-		copyToClipboard(str) {
+		async copyToClipboard(str) {
 			try {
-				navigator.clipboard.writeText(str);
+				await navigator.clipboard.writeText(str);
 				alert('Copied to clipboard!');
 			}
 			catch (err) {

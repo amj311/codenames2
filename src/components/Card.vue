@@ -34,7 +34,6 @@ export default {
 				!this.card.revealed &&
 				this.gameStore.gameState.state.canRevealCard &&
 				(
-					this.gameStore.isHost ||
 					this.gameStore.user.teamId === this.gameStore.gameState.teamOfTurn.id
 				)
 			)

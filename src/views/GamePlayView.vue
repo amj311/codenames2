@@ -71,7 +71,6 @@ export default {
 			return (
 				this.gameState.state.canRevealCard &&
 				(
-					this.gameStore.isHost ||
 					this.gameStore.user.teamId === this.teamOfTurn.id
 				)
 			)
@@ -224,7 +223,7 @@ export default {
 							v-model="newHint"
 							placeholder="Type hint here..."
 						/>
-						<span> for {{ newMatchingCardIds.size }} words</span>
+						<span> for <span class="text-code">{{ newMatchingCardIds.size }}</span> words</span>
 						<br />
 						<button
 							@click="startGuessing"

@@ -124,7 +124,7 @@ async function playAgain() {
 						<i class="material-icons">replay</i>
 					</div>
 					<div
-						v-else-if="!gameStore.gameState.state.isGameOver"
+						v-else-if="!gameStore.gameState.state.isInPlay"
 						@click="promptLeaveRoom"
 						class="button text"
 						style="cursor: pointer; display: flex; align-items: center; justify-content: center;"

@@ -1,11 +1,11 @@
 export default class Card {
-	id: number
+	id: string
 	word: string
 	suiteId: string
 	color: string
 	revealed: boolean
 
-	constructor(id: number, word: string, suite) {
+	constructor(id: string, word: string, suite) {
 		this.id = id
 		this.word = word
 		this.suiteId = suite.id
