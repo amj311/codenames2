@@ -113,7 +113,7 @@ const check = () => {
 	return true;
 }
 const registerServiceWorker = async () => {
-	swRegistration = await navigator.serviceWorker.register('serviceworker.js'); //notice the file name
+	swRegistration = await navigator?.serviceWorker?.register('serviceworker.js'); //notice the file name
 	return swRegistration;
 }
 
