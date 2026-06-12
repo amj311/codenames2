@@ -90,7 +90,7 @@ async function promptAi(prompt, options: any = {}) {
 		const { data } = await axios.post(
 			"https://api.groq.com/openai/v1/chat/completions",
 			{
-				model: options.model || "llama-3.1-70b-versatile",
+				model: options.model || "llama-3.1-8b-instant",
 				temperature: options.temperature || 0.5,
 				max_tokens: options.max_tokens || 256,
 				top_p: options.top_p || 0.5,
